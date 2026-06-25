@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/stevenmcintyre/.nvm/**)",
+      "Bash(find /Users/stevenmcintyre -name \"node\" -type f 2>/dev/null | head -5; find /usr -name \"node\" -type f 2>/dev/null | head -5; ls /opt/homebrew/bin/ 2>/dev/null | head -20)",
+      "Bash(ls /opt/pkg/env/active/bin/ 2>/dev/null | grep -E \"node|npm|npx\")",
+      "Bash(mkdir -p \"/Users/stevenmcintyre/.claude/projects/-Users-stevenmcintyre-Documents-WattSmart/memory/\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs ps -p)",
+      "Bash(kill 28487)",
+      "Read(//private/tmp/**)",
+      "Bash(unzip -o /Users/stevenmcintyre/Downloads/WattSmart.zip -d WattSmart_design)",
+      "Bash(cp \"/tmp/WattSmart_design/design_handoff_wattsmart_platform/WattSmartLogo-daylight.png\" /Users/stevenmcintyre/Documents/WattSmart/public/logo-daylight.png)",
+      "Bash(cp \"/tmp/WattSmart_design/design_handoff_wattsmart_platform/WattSmartLogo.png\" /Users/stevenmcintyre/Documents/WattSmart/public/logo.png)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp \"/Users/stevenmcintyre/.claude/projects/-Users-stevenmcintyre-Documents-WattSmart/62b02fd0-f3a8-4a91-8063-22ee9ecf02c1/tool-results/webfetch-1781650195201-zago1r.bin\" /tmp/design.gz)",
+      "Bash(gunzip -f /tmp/design.gz)",
+      "Read(//tmp/**)",
+      "Bash(tar xf *)",
+      "Bash(cp /tmp/wattsmart2/WattSmartLogo-daylight.png /Users/stevenmcintyre/Documents/WattSmart/public/logo.png)",
+      "Bash(grep -r \"ws-dark-green\\\\|ws-subtle\\\\|ws-green-tint$\\\\|ws-amber-bg\\\\b\" /Users/stevenmcintyre/Documents/WattSmart/src/app --include=\"*.tsx\" -l)",
+      "Bash(npm install *)",
+      "Bash(npx playwright *)",
+      "Bash(awk '/create table if not exists enquiries/,/^;/' /Users/stevenmcintyre/Documents/WattSmart/supabase/migrations/001_initial_schema.sql)",
+      "Bash(xargs cat)",
+      "Bash(python3 -c ' *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

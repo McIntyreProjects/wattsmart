@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ws-green:        #15A05A;
+  --ws-green-deep:   #0E7A43;
+  --ws-green-tint:   #EAF5EE;
+  --ws-green-tint2:  #F2F6F3;
+  --ws-bg:           #E7EAE7;
+  --ws-card:         #FFFFFF;
+  --ws-border:       #E4EAE6;
+  --ws-ink:          #15201B;
+  --ws-body:         #3D463F;
+  --ws-muted:        #7C887F;
+  --ws-amber-bg:     #FBF7EC;
+  --ws-amber-border: #EAD9A8;
+  --ws-amber-text:   #8A6B1F;
+  --ws-red-text:     #B23A2E;
+  --ws-red-bg:       #FBEEEC;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--ws-bg);
+  color: var(--ws-body);
+  font-family: 'Figtree', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--ws-ink);
+}
+
+/* Eyebrow label */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ws-green);
+  font-family: 'Figtree', sans-serif;
+}
+
+/* Product tag pills */
+.tag-solar    { background: #EAF3DE; color: #27500A; }
+.tag-battery  { background: #E6F1FB; color: #0C447C; }
+.tag-heatpump { background: #FAECE7; color: #712B13; }
+.tag-ev       { background: #EEEDFE; color: #3C3489; }
+
+/* Redacted review pill */
+.pill-redacted {
+  display: inline-block;
+  background: #F0EFEB;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: #9AA39D;
+  font-style: italic;
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid var(--ws-green);
+  outline-offset: 2px;
+}
