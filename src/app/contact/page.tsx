@@ -43,9 +43,8 @@ export default function ContactPage() {
           WattSmart
         </Link>
         <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/how-it-works" className="hover:text-ws-ink transition-colors">How it works</Link>
+          <Link href="/#how-it-works" className="hover:text-ws-ink transition-colors">How it works</Link>
           <Link href="/contact" className="text-ws-dark-green font-bold">Contact</Link>
-          <Link href="/help" className="hover:text-ws-ink transition-colors">Help centre</Link>
         </div>
       </nav>
 
