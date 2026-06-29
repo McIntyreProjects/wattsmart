@@ -1,7 +1,20 @@
+'use client'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 
-export default function RefundConfirmedPage() {
+function RefundConfirmedInner() {
+  const searchParams = useSearchParams()
+  const refundParam = searchParams.get('refund')
+  const feeParam = searchParams.get('fee')
+
+  const hasDetails = refundParam !== null
+
+  const refundAmount = refundParam ? parseFloat(refundParam) : null
+  const feeAmount = feeParam ? parseFloat(feeParam) : null
+  const showFee = feeAmount !== null && feeAmount > 0
+
   return (
     <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
       <nav className="bg-white border-b border-ws-border">
@@ -15,14 +28,23 @@ export default function RefundConfirmedPage() {
           <span className="text-ws-green text-xl font-bold">✓</span>
         </div>
         <h1 className="font-display font-extrabold text-2xl tracking-tight mb-2">Your refund is confirmed</h1>
-        <p className="text-sm text-ws-muted leading-relaxed mb-6">
-          WattSmart has returned its 5% (£12.50) to your Visa ending 4471; your installer returns their 95% (£237.50) within 14 days.
-        </p>
+        {hasDetails ? (
+          <p className="text-sm text-ws-muted leading-relaxed mb-6">
+            {showFee
+              ? `WattSmart has retained its 5% fee (£${feeAmount!.toFixed(2)}). Your refund of £${refundAmount!.toFixed(2)} will appear on your card within 3–5 working days.`
+              : `Your full refund of £${refundAmount!.toFixed(2)} will appear on your card within 3–5 working days.`
+            }
+          </p>
+        ) : (
+          <p className="text-sm text-ws-muted leading-relaxed mb-6">
+            Your refund has been processed and will appear on your card within 3–5 working days.
+          </p>
+        )}
 
         <div className="border border-ws-border rounded-tile overflow-hidden mb-5 bg-white">
           {[
-            { label: 'Cancellation confirmed', detail: 'Today · 9:32am', done: true },
-            { label: 'Refund issued', detail: 'Today · 9:33am · to Visa ending 4471', done: true },
+            { label: 'Cancellation confirmed', detail: 'Today' },
+            { label: 'Refund issued', detail: hasDetails ? `£${refundAmount!.toFixed(2)} · back to your card` : 'Back to your card' },
           ].map((step, i, arr) => (
             <div key={step.label} className={`flex items-start gap-3 px-4 py-3.5 ${i < arr.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
               <span className="w-5 h-5 rounded-full bg-[#EAF5EE] flex items-center justify-center text-ws-green text-xs flex-shrink-0 mt-0.5">✓</span>
@@ -35,8 +57,7 @@ export default function RefundConfirmedPage() {
         </div>
 
         <div className="bg-[#F2F6F3] rounded-tile p-4 mb-6 text-sm text-ws-muted leading-relaxed">
-          Most banks show a refund within 3–5 working days. We've confirmed it from our side — your bank handles the rest.<br /><br />
-          A confirmation email and receipt are in your inbox — and saved to Documents.
+          Most banks show a refund within 3–5 working days. We&apos;ve confirmed it from our side — your bank handles the rest.
         </div>
 
         <Link href="/" className="block w-full text-center bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-green-deep transition-colors">
@@ -44,5 +65,13 @@ export default function RefundConfirmedPage() {
         </Link>
       </main>
     </div>
+  )
+}
+
+export default function RefundConfirmedPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#E7EAE7' }} />}>
+      <RefundConfirmedInner />
+    </Suspense>
   )
 }

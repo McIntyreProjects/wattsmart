@@ -55,7 +55,12 @@ function CancelPageInner() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Refund failed')
-      router.push('/customer/refund-confirmed')
+      const params = new URLSearchParams({
+        refund: refundAmount.toFixed(2),
+        deposit: depositAmount.toFixed(2),
+        fee: withinCoolingOff ? '0' : wattsmart5pct.toFixed(2),
+      })
+      router.push(`/customer/refund-confirmed?${params.toString()}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
     } finally {
