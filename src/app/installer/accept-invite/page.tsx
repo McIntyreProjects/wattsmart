@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -9,7 +9,7 @@ type InviteDetails = {
   companyName: string
 }
 
-export default function AcceptInvitePage() {
+function AcceptInviteContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
@@ -159,5 +159,17 @@ export default function AcceptInvitePage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+        <p className="text-sm text-ws-muted">Loading…</p>
+      </div>
+    }>
+      <AcceptInviteContent />
+    </Suspense>
   )
 }
