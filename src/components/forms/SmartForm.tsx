@@ -189,7 +189,7 @@ export function SmartForm() {
       {/* Step 0 — Products */}
       {step === 0 && (
         <div>
-          <p className="eyebrow mb-3">2 / 6</p>
+          <p className="eyebrow mb-3">1 / 6</p>
           <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
             What are you thinking of?
           </h2>

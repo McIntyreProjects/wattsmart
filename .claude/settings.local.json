@@ -30,7 +30,17 @@
       "Bash(mkdir -p /Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/\\\\[installerId\\\\]/verify-certs)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(sed -i '' 's/<p className=\"eyebrow mb-3\">2 \\\\/ 6<\\\\/p>/<p className=\"eyebrow mb-3\">1 \\\\/ 6<\\\\/p>/' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/components/forms/SmartForm.tsx)",
+      "Bash(sed -i '' 's|<Link href=\"/how-it-works\" className=\"hover:text-ws-body transition-colors\">How it works</Link>|<span>How it works</span>|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/page.tsx)",
+      "Bash(sed -i '' 's|href={`/customer/enquiries/\\\\${params.enquiryId}/deposit?quote=\\\\${params.quoteId}`}|href={`/customer/checkout`}|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/customer/enquiries/[enquiryId]/breakdown/[quoteId]/page.tsx)",
+      "Bash(sed -i '' 's|href=\"/admin/installers/greenfield/verify-certs\"|href=\"/admin/installers/greenfield-renewables/verify-certs\"|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/page.tsx)",
+      "Bash(sed -i '' 's|href=\"/admin/installers/greenfield/verify-certs\"|href={`/admin/installers/${params?.installerId ?? '\\\\''installer'\\\\''}/verify-certs`}|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx)",
+      "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/[installerId]/page.tsx /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx)",
+      "Bash(sed -i '' 's|href=\"/admin/installers/greenfield/verify-certs\"|href={`/admin/installers/${params.installerId}/verify-certs`}|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx)",
+      "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/customer/enquiries/[enquiryId]/breakdown/[quoteId]/page.tsx \"/Users/stevenmcintyre/Documents/WattSmart/src/app/customer/enquiries/[enquiryId]/breakdown/[quoteId]/page.tsx\")",
+      "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx \"/Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/[installerId]/page.tsx\")"
     ]
   }
 }

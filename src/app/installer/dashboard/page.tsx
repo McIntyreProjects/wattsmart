@@ -81,10 +81,14 @@ export default async function InstallerDashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
-      <nav className="bg-ws-card border-b border-ws-border">
-        <div className="max-w-content mx-auto px-5 py-4 flex items-center justify-between">
-          <Logo />
-          <span className="text-sm text-ws-muted font-medium">{installer.company_name}</span>
+      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
+        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <div className="flex gap-6 text-sm text-ws-muted">
+          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Dashboard</span>
+          <Link href="/installer/profile" className="hover:text-ws-ink">Profile</Link>
+          <Link href="/installer/team" className="hover:text-ws-ink">Team</Link>
+          <Link href="/installer/fees" className="hover:text-ws-ink">Fees</Link>
+          <Link href="/installer/performance" className="hover:text-ws-ink">Performance</Link>
         </div>
       </nav>
 

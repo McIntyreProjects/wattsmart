@@ -190,7 +190,7 @@ export default function HomePage() {
         <div className="max-w-content mx-auto px-5 flex flex-wrap items-center justify-between gap-4 text-sm text-ws-muted">
           <Logo />
           <nav className="flex flex-wrap gap-4">
-            <Link href="/how-it-works" className="hover:text-ws-body transition-colors">How it works</Link>
+            <span>How it works</span>
             <Link href="/contact"       className="hover:text-ws-body transition-colors">Contact us</Link>
             <Link href="/privacy"       className="hover:text-ws-body transition-colors">Privacy policy</Link>
             <Link href="/terms"         className="hover:text-ws-body transition-colors">Terms & conditions</Link>

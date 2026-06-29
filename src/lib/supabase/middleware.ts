@@ -34,9 +34,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login?type=customer', request.url))
   }
 
-  // Protected installer routes (register is public)
-  const installerPublicPaths = ['/installer/register']
-  if (path.startsWith('/installer') && !installerPublicPaths.includes(path) && !user) {
+  // Protected installer routes (register and accept-invite are public)
+  const installerPublicPaths = ['/installer/register', '/installer/accept-invite']
+  if (path.startsWith('/installer') && !installerPublicPaths.some(p => path.startsWith(p)) && !user) {
     return NextResponse.redirect(new URL('/auth/login?type=installer', request.url))
   }
 

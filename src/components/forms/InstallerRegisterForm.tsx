@@ -3,14 +3,25 @@
 import { useState } from 'react'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Button } from '@/components/ui/Button'
-import { CertStatusBadge } from '@/components/ui/Badge'
+
+const ALL_OPTIONAL_CERTS: { id: string; label: string; other?: boolean }[] = [
+  { id: 'trustmark', label: 'TrustMark' },
+  { id: 'which', label: 'Which? Trusted Trader' },
+  { id: 'napit', label: 'NAPIT' },
+  { id: 'gas_safe', label: 'Gas Safe' },
+  { id: 'fgas', label: 'F-Gas' },
+  { id: 'hies', label: 'HIES' },
+  { id: 'elecsa', label: 'ELECSA' },
+  { id: 'other', label: 'Other', other: true },
+]
 
 const STEPS = 5
 
-type CertEntry = { number: string; status: 'pending' | 'verified' | 'failed'; source?: string }
+type CertEntry = { number: string }
 
 type FormData = {
   companyName: string
+  tradingName: string
   companiesHouseNumber: string
   contactName: string
   contactEmail: string
@@ -83,18 +94,60 @@ function FieldInput({ label, value, onChange, type = 'text', placeholder, option
   )
 }
 
+function CertField({ label, value, onChange, optional, onRemove, nameable }: {
+  label: string; value: string; onChange: (v: string) => void
+  optional?: boolean; onRemove?: () => void; nameable?: boolean
+}) {
+  const [certName, setCertName] = useState('')
+  return (
+    <div className="border border-ws-border rounded-tile px-4 py-4 bg-white space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-semibold text-ws-ink">
+          {label} {optional && <span className="text-ws-muted font-normal">(optional)</span>}
+        </label>
+        {onRemove && (
+          <button type="button" onClick={onRemove} className="text-xs text-ws-muted hover:text-ws-red-text">Remove</button>
+        )}
+      </div>
+      {nameable && (
+        <input
+          type="text"
+          value={certName}
+          onChange={e => setCertName(e.target.value)}
+          placeholder="Certification name (e.g. OFTEC)"
+          className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
+        />
+      )}
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={nameable ? 'Certification number' : `Enter your ${label.toLowerCase()}`}
+        className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm font-mono text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
+      />
+      <label className="flex items-center gap-2 cursor-pointer group w-fit">
+        <div className="border border-dashed border-ws-border rounded-btn px-3 py-1.5 text-xs text-ws-muted group-hover:border-ws-green group-hover:text-ws-dark-green transition-colors flex items-center gap-1.5">
+          <span>↑</span> Upload certificate <span className="text-ws-subtle">(optional — PDF or image)</span>
+        </div>
+        <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" />
+      </label>
+    </div>
+  )
+}
+
 export function InstallerRegisterForm() {
   const [step, setStep] = useState(0)
   const [data, setData] = useState<FormData>({
-    companyName: '', companiesHouseNumber: '', contactName: '', contactEmail: '',
+    companyName: '', tradingName: '', companiesHouseNumber: '', contactName: '', contactEmail: '',
     contactPhone: '', yearsTrading: '', products: [], certifications: {},
     coveragePostcodes: '', googleBusinessName: '', trustpilotUrl: '',
     password: '', passwordConfirm: '',
   })
   const [loading, setLoading] = useState(false)
-  const [verifying, setVerifying] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [extraCerts, setExtraCerts] = useState<string[]>([])
+  const [showExtraPicker, setShowExtraPicker] = useState(false)
 
   const set = (field: keyof FormData, value: unknown) =>
     setData(d => ({ ...d, [field]: value }))
@@ -109,26 +162,11 @@ export function InstallerRegisterForm() {
       ...d,
       certifications: {
         ...d.certifications,
-        [id]: { ...(d.certifications[id] || { number: '', status: 'pending' }), [field]: value },
+        [id]: { ...(d.certifications[id] || { number: '' }), [field]: value },
       },
     }))
 
-  const verifyCert = async (type: string) => {
-    const cert = data.certifications[type]
-    if (!cert?.number) return
-    setVerifying(type)
-    const res = await fetch('/api/installers/verify-cert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, number: cert.number }),
-    })
-    const result = await res.json()
-    setCert(type, 'status', result.verified ? 'verified' : 'failed')
-    if (result.source) setCert(type, 'source', result.source)
-    setVerifying(null)
-  }
-
-  const canProceed = () => {
+const canProceed = () => {
     if (step === 0) return data.companyName && data.contactName && data.contactEmail && data.contactPhone
     if (step === 1) return data.products.length > 0
     if (step === 2) {
@@ -189,7 +227,28 @@ export function InstallerRegisterForm() {
               Business details
             </h2>
           </div>
-          <FieldInput label="Company name" value={data.companyName} onChange={v => set('companyName', v)} />
+          <div>
+            <label className="block text-sm font-semibold text-ws-ink mb-1.5">Company name</label>
+            <input
+              type="text"
+              value={data.companyName}
+              onChange={e => set('companyName', e.target.value)}
+              placeholder="e.g. Northside Solar Co. Ltd"
+              className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
+            />
+            <p className="text-xs text-ws-muted mt-1.5">Enter your registered company name exactly as it appears on Companies House.</p>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-ws-ink mb-1.5">Trading name <span className="text-ws-muted font-normal">(if applicable)</span></label>
+            <input
+              type="text"
+              value={data.tradingName}
+              onChange={e => set('tradingName', e.target.value)}
+              placeholder="e.g. Northside Solar"
+              className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
+            />
+            <p className="text-xs text-ws-muted mt-1.5">If you trade under a different name, enter it here — this is what customers will see. Leave blank to use your company name.</p>
+          </div>
           <FieldInput label="Companies House number" optional value={data.companiesHouseNumber} onChange={v => set('companiesHouseNumber', v)} />
           <FieldInput label="Your name" value={data.contactName} onChange={v => set('contactName', v)} />
           <FieldInput label="Email address" type="email" value={data.contactEmail} onChange={v => set('contactEmail', v)} />
@@ -229,43 +288,81 @@ export function InstallerRegisterForm() {
         <div className="space-y-5">
           <div>
             <p className="eyebrow mb-3">Step 3 of 5</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
               Certification numbers
             </h2>
+            <p className="text-sm text-ws-muted mb-6 leading-relaxed">Our team manually checks each number against the relevant register before your account goes live.</p>
           </div>
-          {certFields.map(f => (
-            <div key={f.id}>
-              <label className="block text-sm font-semibold text-ws-ink mb-1.5">
-                {f.label} {!f.required && <span className="text-ws-muted font-normal">(optional)</span>}
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={data.certifications[f.id]?.number || ''}
-                  onChange={e => setCert(f.id, 'number', e.target.value)}
-                  placeholder={`Enter ${f.label.toLowerCase()}`}
-                  className="flex-1 border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
-                />
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => verifyCert(f.id)}
-                  loading={verifying === f.id}
-                  disabled={!data.certifications[f.id]?.number}
-                >
-                  Check
-                </Button>
-              </div>
-              {data.certifications[f.id]?.status && data.certifications[f.id].status !== 'pending' && (
-                <div className="mt-1.5 flex items-center gap-2">
-                  <CertStatusBadge status={data.certifications[f.id].status} />
-                  {data.certifications[f.id].source && (
-                    <span className="text-xs text-ws-muted">{data.certifications[f.id].source}</span>
-                  )}
-                </div>
-              )}
-            </div>
+          <div className="bg-[#F1FAF5] border border-[#CDE6D7] rounded-tile px-4 py-3 text-xs text-ws-dark-green leading-relaxed">
+            <strong>Tip:</strong> uploading a copy of your certificate alongside your number helps us verify and approve your account quicker.
+          </div>
+
+          {/* Required certs for selected products */}
+          {certFields.filter(f => f.required).map(f => (
+            <CertField
+              key={f.id}
+              label={f.label}
+              value={data.certifications[f.id]?.number || ''}
+              onChange={v => setCert(f.id, 'number', v)}
+            />
           ))}
+
+          {/* Extra certs the installer has added */}
+          {extraCerts.map((id, idx) => {
+            const cert = ALL_OPTIONAL_CERTS.find(c => c.id === id)!
+            const isOther = cert.other
+            const otherId = `other_${idx}`
+            return (
+              <CertField
+                key={id === 'other' ? otherId : id}
+                label={isOther ? 'Other certification' : cert.label}
+                optional
+                nameable={isOther}
+                value={data.certifications[isOther ? otherId : id]?.number || ''}
+                onChange={v => setCert(isOther ? otherId : id, 'number', v)}
+                onRemove={() => setExtraCerts(prev => prev.filter((_, i) => i !== idx))}
+              />
+            )
+          })}
+
+          {/* Add more */}
+          {showExtraPicker ? (
+            <div className="border border-ws-border rounded-tile px-4 py-3 bg-white space-y-2">
+              <p className="text-xs font-semibold text-ws-muted">Select a certification to add</p>
+              <select
+                className="w-full border border-ws-border rounded-btn px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-ws-green"
+                defaultValue=""
+                onChange={e => {
+                  const val = e.target.value
+                  if (val && !extraCerts.includes(val)) {
+                    setExtraCerts(prev => [...prev, val])
+                  }
+                  setShowExtraPicker(false)
+                }}
+              >
+                <option value="" disabled>Choose…</option>
+                {ALL_OPTIONAL_CERTS
+                  .filter(c => c.other || (!extraCerts.includes(c.id) && !certFields.find(f => f.id === c.id)))
+                  .map(c => <option key={c.id} value={c.id}>{c.label}</option>)
+                }
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowExtraPicker(false)}
+                className="text-xs text-ws-muted hover:text-ws-ink"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowExtraPicker(true)}
+              className="w-full border-2 border-dashed border-ws-border rounded-tile py-3 text-sm text-ws-muted hover:border-ws-green hover:text-ws-dark-green transition-colors font-semibold"
+            >
+              + Add another certification
+            </button>
+          )}
         </div>
       )}
 
@@ -308,7 +405,9 @@ export function InstallerRegisterForm() {
           )}
 
           <div className="border-t border-ws-border pt-4 space-y-2 text-sm">
-            <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Company</span><span>{data.companyName}</span></div>
+            <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Registered name</span><span>{data.companyName}</span></div>
+            {data.tradingName && <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Trading as</span><span>{data.tradingName}</span></div>}
+            <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Name shown to customers</span><span className="font-semibold text-ws-dark-green">{data.tradingName || data.companyName}</span></div>
             <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Email</span><span>{data.contactEmail}</span></div>
             <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Products</span><span>{data.products.join(', ')}</span></div>
             <div className="flex justify-between text-ws-body"><span className="text-ws-muted">Coverage</span><span>{data.coveragePostcodes}</span></div>

@@ -8,13 +8,14 @@ const FEES = [
 export default function InstallerFeesPage() {
   return (
     <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
-      <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4 flex items-center gap-6">
+      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-5 text-sm text-ws-muted">
-          <Link href="/installer/dashboard" className="hover:text-ws-body">Dashboard</Link>
-          <Link href="/installer/profile" className="hover:text-ws-body">Profile</Link>
-          <Link href="/installer/performance" className="hover:text-ws-body">Performance</Link>
-          <span className="text-ws-green-deep font-bold border-b-2 border-ws-green pb-1">Fees</span>
+        <div className="flex gap-6 text-sm text-ws-muted">
+          <Link href="/installer/dashboard" className="hover:text-ws-ink">Dashboard</Link>
+          <Link href="/installer/profile" className="hover:text-ws-ink">Profile</Link>
+          <Link href="/installer/team" className="hover:text-ws-ink">Team</Link>
+          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Fees</span>
+          <Link href="/installer/performance" className="hover:text-ws-ink">Performance</Link>
         </div>
       </nav>
 

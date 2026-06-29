@@ -47,8 +47,8 @@ export default function CertLapsedPage() {
           <p className="font-semibold mb-1">Get back to matching in 3 steps</p>
           <ol className="space-y-1 text-xs">
             <li><span className="font-bold">1</span> Renew your NICEIC registration</li>
-            <li><span className="font-bold">2</span> Confirm here — we re-check the register</li>
-            <li><span className="font-bold">3</span> New-job matching resumes automatically — usually within an hour</li>
+            <li><span className="font-bold">2</span> Upload your renewed certificate using the button below</li>
+            <li><span className="font-bold">3</span> Our team will verify it and re-activate your account</li>
           </ol>
         </div>
 

@@ -13,6 +13,14 @@ const PRODUCTS = [
 export default function InstallerOnboardingPage() {
   const [step, setStep] = useState(1)
   const [selected, setSelected] = useState<string[]>(['solar', 'battery', 'ev'])
+  const [hasScrolled, setHasScrolled] = useState(false)
+
+  const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) {
+      setHasScrolled(true)
+    }
+  }
 
   const toggle = (id: string) =>
     setSelected((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
@@ -181,7 +189,7 @@ export default function InstallerOnboardingPage() {
               <span className="text-xs font-semibold text-ws-dark-green whitespace-nowrap">Download PDF ↓</span>
             </div>
             <div className="border border-ws-border rounded-tile overflow-hidden max-w-lg mb-4">
-              <div className="max-h-48 overflow-auto p-5 text-xs text-[#3D463F] leading-relaxed space-y-3">
+              <div className="max-h-48 overflow-auto p-5 text-xs text-[#3D463F] leading-relaxed space-y-3" onScroll={handleTermsScroll}>
                 <p className="font-bold text-sm">WattSmart Installer Terms of Service</p>
                 <p className="text-xs text-ws-subtle">Version 3.1 · effective 2 June 2026</p>
                 <p><strong>1. Eligibility &amp; certifications.</strong> You confirm your business holds, and will maintain for the life of your account, every certification required for the products you fit.</p>
@@ -193,10 +201,12 @@ export default function InstallerOnboardingPage() {
                 <p><strong>7. Conduct &amp; removal.</strong> WattSmart may suspend or remove accounts for misrepresentation, invalid certifications, repeated poor reviews or breach of these terms.</p>
                 <p className="text-center text-ws-subtle">— End of terms —</p>
               </div>
-              <div className="flex items-center gap-2 border-t border-[#EDF1EE] bg-[#F4FBF6] px-4 py-2.5">
-                <span className="w-5 h-5 rounded-full bg-ws-green text-white flex items-center justify-center text-xs">✓</span>
-                <span className="text-xs text-ws-dark-green font-semibold">You've read to the end</span>
-              </div>
+              {hasScrolled && (
+                <div className="flex items-center gap-2 border-t border-[#EDF1EE] bg-[#F4FBF6] px-4 py-2.5">
+                  <span className="w-5 h-5 rounded-full bg-ws-green text-white flex items-center justify-center text-xs">✓</span>
+                  <span className="text-xs text-ws-dark-green font-semibold">You've read to the end</span>
+                </div>
+              )}
             </div>
             <div className="flex gap-3 items-start mb-5 max-w-lg">
               <span className="w-6 h-6 rounded-lg bg-ws-green text-white flex items-center justify-center text-sm flex-shrink-0 mt-0.5">✓</span>

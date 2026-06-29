@@ -72,9 +72,15 @@ export default function AdminPipelinePage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-ws-muted mt-6 leading-relaxed max-w-2xl">
-          Read-only board. Amber = one quote received, auto-sent to more installers (nothing to action). Click a card to see the full job.
-        </p>
+        <div className="mt-6 flex flex-col gap-2 max-w-2xl">
+          <p className="text-xs text-ws-muted leading-relaxed">
+            Read-only board. Amber = one quote received, auto-sent to more installers (nothing to action). Click a card to see the full job.
+          </p>
+          <div className="border border-ws-border rounded-xl px-4 py-3 bg-white text-xs text-ws-muted leading-relaxed">
+            <span className="font-semibold text-ws-ink">How matching works — </span>
+            We send each brief to the 3 nearest verified installers who hold the right certifications and cover the customer&apos;s postcode district, supporting local businesses and fast turnaround.
+          </div>
+        </div>
       </div>
     </div>
   )

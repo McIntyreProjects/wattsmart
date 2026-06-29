@@ -37,6 +37,11 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
   const [installer, setInstaller] = useState<InstallerData | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [reviewTab, setReviewTab] = useState<'google' | 'trustpilot'>('google')
+
+  useEffect(() => {
+    const defaultTab = reviews.some(r => r.source === 'google') ? 'google' : 'trustpilot'
+    setReviewTab(defaultTab)
+  }, [reviews])
   const [depositLoading, setDepositLoading] = useState(false)
   const [paymentDone, setPaymentDone] = useState(false)
 

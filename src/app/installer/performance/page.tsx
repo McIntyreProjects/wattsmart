@@ -1,6 +1,21 @@
+'use client'
 import Link from 'next/link'
 
 export default function InstallerPerformancePage() {
+  const userRole = 'member' // TODO: replace with real role from auth context
+
+  if (userRole === 'member') {
+    return (
+      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+        <div className="max-w-sm text-center">
+          <p className="font-display font-extrabold text-xl tracking-tight mb-2">Access restricted</p>
+          <p className="text-sm text-ws-muted">Only Managers can view and manage the team. Contact your Manager if you need access.</p>
+          <Link href="/installer/dashboard" className="inline-block mt-5 text-sm text-ws-dark-green font-semibold hover:underline">← Back to dashboard</Link>
+        </div>
+      </div>
+    )
+  }
+
   const metrics = [
     { label: 'Briefs received', value: '52', sub: 'last 90 days' },
     { label: 'Quotes submitted', value: '41', sub: '79% of briefs', highlight: false },

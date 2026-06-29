@@ -83,7 +83,7 @@ export default function QuoteBreakdownPage({ params }: { params: { enquiryId: st
         </div>
 
         <Link
-          href={`/customer/enquiries/${params.enquiryId}/deposit?quote=${params.quoteId}`}
+          href={`/customer/checkout`}
           className="block w-full bg-ws-green text-white rounded-btn py-4 font-bold text-base text-center hover:bg-ws-dark-green transition-colors"
         >
           Choose Quote {quoteLabel}
