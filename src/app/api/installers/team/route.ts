@@ -127,3 +127,95 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch team' }, { status: 500 })
   }
 }
+
+// Helper: get installer_id and verify caller is a manager
+async function getManagerContext(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data: membership } = await supabase
+    .from('installer_users')
+    .select('installer_id, role')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (membership) {
+    if (membership.role !== 'manager') return { error: 'Forbidden', installerId: null }
+    return { error: null, installerId: membership.installer_id as string }
+  }
+
+  // Fallback: primary account holder
+  const { data: installer } = await supabase
+    .from('installers')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (!installer) return { error: 'Installer not found', installerId: null }
+  return { error: null, installerId: installer.id as string }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+    const { userId, role } = await request.json()
+    if (!userId || !role || !['manager', 'member'].includes(role)) {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
+    const { error: ctxError, installerId } = await getManagerContext(supabase, user.id)
+    if (ctxError || !installerId) {
+      return NextResponse.json({ error: ctxError ?? 'Forbidden' }, { status: 403 })
+    }
+
+    const admin = await createAdminClient()
+    const { error } = await admin
+      .from('installer_users')
+      .update({ role })
+      .eq('user_id', userId)
+      .eq('installer_id', installerId)
+
+    if (error) throw error
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('PATCH /api/installers/team error:', err)
+    return NextResponse.json({ error: 'Failed to update role' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+    const { userId } = await request.json()
+    if (!userId) return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+
+    const { error: ctxError, installerId } = await getManagerContext(supabase, user.id)
+    if (ctxError || !installerId) {
+      return NextResponse.json({ error: ctxError ?? 'Forbidden' }, { status: 403 })
+    }
+
+    // Prevent a manager from removing themselves
+    if (userId === user.id) {
+      return NextResponse.json({ error: 'You cannot remove yourself' }, { status: 400 })
+    }
+
+    const admin = await createAdminClient()
+    const { error } = await admin
+      .from('installer_users')
+      .update({ status: 'removed' })
+      .eq('user_id', userId)
+      .eq('installer_id', installerId)
+
+    if (error) throw error
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('DELETE /api/installers/team error:', err)
+    return NextResponse.json({ error: 'Failed to remove member' }, { status: 500 })
+  }
+}

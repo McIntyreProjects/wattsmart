@@ -7,6 +7,7 @@ type MemberStatus = 'active' | 'pending'
 
 type TeamMember = {
   id: string
+  user_id?: string
   name: string
   email: string
   role: Role
@@ -29,6 +30,8 @@ export default function InstallerTeamPage() {
   const [inviteError, setInviteError] = useState('')
   const [inviteLoading, setInviteLoading] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null)
+  const [actionLoading, setActionLoading] = useState<string | null>(null) // memberId being acted on
+  const [actionError, setActionError] = useState<string>('')
 
   useEffect(() => {
     fetch('/api/installers/team')
@@ -77,12 +80,57 @@ export default function InstallerTeamPage() {
     }, 2000)
   }
 
-  const changeRole = (id: string, role: Role) =>
+  const changeRole = async (id: string, role: Role) => {
+    const member = members.find(m => m.id === id)
+    if (!member) return
+    const prevRole = member.role
+    // Optimistic update
     setMembers(prev => prev.map(m => m.id === id ? { ...m, role } : m))
+    setActionLoading(id)
+    setActionError('')
+    try {
+      const res = await fetch('/api/installers/team', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: member.user_id ?? id, role }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        // Revert
+        setMembers(prev => prev.map(m => m.id === id ? { ...m, role: prevRole } : m))
+        setActionError(json.error || 'Failed to update role')
+      }
+    } catch {
+      setMembers(prev => prev.map(m => m.id === id ? { ...m, role: prevRole } : m))
+      setActionError('Failed to update role')
+    } finally {
+      setActionLoading(null)
+    }
+  }
 
-  const removeMember = (id: string) => {
-    setMembers(prev => prev.filter(m => m.id !== id))
-    setConfirmRemove(null)
+  const removeMember = async (id: string) => {
+    const member = members.find(m => m.id === id)
+    if (!member) return
+    setActionLoading(id)
+    setActionError('')
+    try {
+      const res = await fetch('/api/installers/team', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: member.user_id ?? id }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setActionError(json.error || 'Failed to remove member')
+      } else {
+        setMembers(prev => prev.filter(m => m.id !== id))
+        setConfirmRemove(null)
+      }
+    } catch {
+      setActionError('Failed to remove member')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   return (
@@ -243,7 +291,8 @@ export default function InstallerTeamPage() {
                         <select
                           value={m.role}
                           onChange={e => changeRole(m.id, e.target.value as Role)}
-                          className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-ws-green"
+                          disabled={actionLoading === m.id}
+                          className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-ws-green disabled:opacity-50"
                         >
                           <option value="member">Member</option>
                           <option value="manager">Manager</option>
@@ -253,12 +302,24 @@ export default function InstallerTeamPage() {
                       {isManager && !m.you && (
                         confirmRemove === m.id ? (
                           <div className="flex gap-1.5">
-                            <button onClick={() => removeMember(m.id)} className="text-xs font-semibold text-[#C2603F] hover:underline">Remove</button>
+                            <button
+                              onClick={() => removeMember(m.id)}
+                              disabled={actionLoading === m.id}
+                              className="text-xs font-semibold text-[#C2603F] hover:underline disabled:opacity-50"
+                            >
+                              {actionLoading === m.id ? 'Removing…' : 'Remove'}
+                            </button>
                             <span className="text-ws-subtle text-xs">·</span>
                             <button onClick={() => setConfirmRemove(null)} className="text-xs text-ws-muted hover:underline">Cancel</button>
                           </div>
                         ) : (
-                          <button onClick={() => setConfirmRemove(m.id)} className="text-xs text-ws-muted hover:text-[#C2603F]">Remove</button>
+                          <button
+                            onClick={() => { setConfirmRemove(m.id); setActionError('') }}
+                            disabled={actionLoading === m.id}
+                            className="text-xs text-ws-muted hover:text-[#C2603F] disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
                         )
                       )}
                     </div>
@@ -266,6 +327,10 @@ export default function InstallerTeamPage() {
                 </div>
               ))}
             </div>
+
+            {actionError && (
+              <p className="text-xs text-[#C2603F] mt-3">{actionError}</p>
+            )}
 
             <p className="text-xs text-ws-muted mt-4 leading-relaxed">
               {isManager
