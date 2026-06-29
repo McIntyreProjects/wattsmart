@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { CookieBanner } from '@/components/ui/CookieBanner'
 
 export const metadata: Metadata = {
   title: 'WattSmart — Green Energy for Your Home',
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div style={isDev ? { paddingBottom: '34px' } : undefined}>
           {children}
         </div>
+        <CookieBanner />
       </body>
     </html>
   )
