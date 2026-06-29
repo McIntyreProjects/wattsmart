@@ -49,48 +49,44 @@ export default function InstallerProfilePage() {
         {/* Services */}
         <div className="flex justify-between items-center mb-3">
           <p className="eyebrow">Services — accepting quotes</p>
-          <button className="text-xs font-semibold text-ws-dark-green border border-[#CDE6D7] bg-[#F1FAF5] rounded-lg px-3 py-1.5">Turn all on</button>
         </div>
         <div className="border border-ws-border rounded-tile overflow-hidden mb-2">
           {[
-            { label: 'Solar PV', sub: 'MCS + RECC active', on: true },
-            { label: 'Battery storage', sub: 'MCS active', on: true },
-            { label: 'EV chargers', sub: 'OZEV + NICEIC active', on: false },
+            { label: 'Solar PV', sub: 'Requires MCS + RECC' },
+            { label: 'Battery storage', sub: 'Requires MCS' },
+            { label: 'EV chargers', sub: 'Requires OZEV + NICEIC' },
+            { label: 'Heat pumps', sub: 'Requires MCS + NAPIT' },
           ].map((s, i, arr) => (
-            <div key={s.label} className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+            <div key={s.label} className={`flex justify-between items-center px-4 py-3.5 bg-amber-50 ${i < arr.length - 1 ? 'border-b border-amber-100' : ''}`}>
               <div>
-                <p className="font-bold text-sm">{s.label}</p>
-                <p className="text-xs text-ws-subtle mt-0.5">{s.sub}</p>
+                <p className="font-bold text-sm text-amber-700">{s.label}</p>
+                <p className="text-xs text-amber-600 mt-0.5">⚠ Locked — certs pending verification</p>
               </div>
-              <Toggle on={s.on} />
+              <Toggle on={false} locked />
             </div>
           ))}
-          <div className="flex justify-between items-center px-4 py-3.5 bg-amber-50">
-            <div>
-              <p className="font-bold text-sm text-amber-700">Heat pumps</p>
-              <p className="text-xs text-amber-600 mt-0.5">⚠ Auto-paused — renew NAPIT to switch on</p>
-            </div>
-            <Toggle on={false} locked />
-          </div>
         </div>
         <p className="text-xs text-ws-subtle leading-relaxed mb-6">
-          Toggle a service yourself to pause new briefs. Lapsed-cert services stay locked off until renewed — quotes already out aren't affected.
+          Services unlock automatically once your relevant certificates have been verified by our team. You can then toggle individual services on or off yourself.
         </p>
 
         {/* Certifications */}
-        <p className="eyebrow mb-3">Certifications — auto-monitored</p>
-        <div className="flex flex-wrap gap-2 mb-6">
+        <p className="eyebrow mb-3">Certifications</p>
+        <div className="flex flex-wrap gap-2 mb-2">
           {[
-            { label: 'MCS · exp 04/27', ok: true },
-            { label: 'RECC · exp 09/26', ok: true },
-            { label: 'NICEIC · exp 01/27', ok: true },
-            { label: 'NAPIT · renew soon', ok: false },
+            { label: 'MCS', status: 'pending' },
+            { label: 'RECC', status: 'pending' },
+            { label: 'NICEIC', status: 'pending' },
+            { label: 'NAPIT', status: 'pending' },
           ].map((c) => (
-            <span key={c.label} className={`text-xs rounded-lg px-3 py-1.5 font-medium border ${
-              c.ok ? 'border-[#CDE6D7] bg-[#F1FAF5] text-ws-dark-green' : 'border-amber-200 bg-amber-50 text-amber-700'
-            }`}>{c.label}</span>
+            <span key={c.label} className="text-xs rounded-lg px-3 py-1.5 font-medium border border-amber-200 bg-amber-50 text-amber-700">
+              {c.label} · pending verification
+            </span>
           ))}
         </div>
+        <p className="text-xs text-ws-subtle leading-relaxed mb-6">
+          Our team will verify your certificates manually — usually within 1 working day. Services unlock once each relevant cert is confirmed.
+        </p>
 
         {/* Terms */}
         <p className="eyebrow mb-3">Your terms &amp; conditions</p>
