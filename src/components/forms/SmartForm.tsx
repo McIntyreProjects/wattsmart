@@ -178,6 +178,17 @@ export function SmartForm() {
         <p className="text-sm text-ws-muted leading-relaxed">
           We&apos;re matching you with certified local installers now. You&apos;ll hear back within 5 days once quotes are ready to compare.
         </p>
+
+        <a
+          href="/customer/dashboard"
+          className="mt-6 block w-full bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm text-center"
+        >
+          Track your quotes →
+        </a>
+
+        <p className="mt-3 text-xs text-ws-muted leading-relaxed">
+          We&apos;ve created an account for <strong>{data.email}</strong>. Check your inbox for a magic link to log in — no password needed.
+        </p>
       </div>
     )
   }

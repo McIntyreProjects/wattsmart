@@ -59,15 +59,25 @@ export async function POST(req: NextRequest) {
       throw authError
     }
 
+    const userId = authData.user.id
+    const rollback = async () => {
+      await admin.auth.admin.deleteUser(userId).catch(console.error)
+    }
+
     // Add to installer_users
-    await admin.from('installer_users').insert({
+    const { error: insertError } = await admin.from('installer_users').insert({
       installer_id: invite.installer_id,
-      user_id: authData.user.id,
+      user_id: userId,
       role: invite.role,
       invited_by: null,
       status: 'active',
       joined_at: new Date().toISOString(),
     })
+
+    if (insertError) {
+      await rollback()
+      throw insertError
+    }
 
     // Mark invite as accepted
     await admin

@@ -15,6 +15,8 @@ export default function InstallerSchedulePage({ params }: { params: Promise<{ jo
   const [date, setDate] = useState('')
   const [balanceDays, setBalanceDays] = useState(7)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   if (submitted) {
     return (
@@ -83,12 +85,35 @@ export default function InstallerSchedulePage({ params }: { params: Promise<{ jo
           </ul>
         </div>
 
+        {submitError && (
+          <p className="text-xs text-[#C2603F] mb-3">{submitError}</p>
+        )}
         <button
-          disabled={!date}
-          onClick={() => setSubmitted(true)}
+          disabled={!date || submitting}
+          onClick={async () => {
+            setSubmitting(true)
+            setSubmitError('')
+            try {
+              const res = await fetch(`/api/installers/jobs/${jobId}/schedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ proposedDate: date }),
+              })
+              const json = await res.json()
+              if (!res.ok) {
+                setSubmitError(json.error || 'Failed to propose date')
+                return
+              }
+              setSubmitted(true)
+            } catch {
+              setSubmitError('Something went wrong — please try again')
+            } finally {
+              setSubmitting(false)
+            }
+          }}
           className="w-full bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-green-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Propose {date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'date'} →
+          {submitting ? 'Proposing…' : `Propose ${date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'date'} →`}
         </button>
       </div>
     </div>

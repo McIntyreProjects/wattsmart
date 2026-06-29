@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 
@@ -12,15 +13,55 @@ const CANCEL_REASONS = [
   'Other',
 ]
 
-export default function CancelPage() {
-  const [reason, setReason] = useState('')
-  const [confirming, setConfirming] = useState(false)
+function CancelPageInner() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const paymentId = searchParams.get('paymentId')
+  const enquiryId = searchParams.get('enquiryId')
 
-  // In production, check if within 14-day cooling-off period from DB
-  const withinCoolingOff = true // TODO: derive from payment.paid_at
-  const depositAmount = 250
+  const [reason, setReason] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // Derive cooling-off status from paidAt param (ISO string)
+  const paidAtParam = searchParams.get('paidAt')
+  const depositParam = searchParams.get('deposit')
+  const depositAmount = depositParam ? parseFloat(depositParam) : 250
+  const paidAt = paidAtParam ? new Date(paidAtParam) : null
+  const withinCoolingOff = paidAt
+    ? (Date.now() - paidAt.getTime()) < 14 * 24 * 60 * 60 * 1000
+    : true // default to full refund if unknown
+
   const wattsmart5pct = Math.round(depositAmount * 0.05 * 100) / 100
   const refundAmount = withinCoolingOff ? depositAmount : depositAmount - wattsmart5pct
+
+  // Installer details from params (safe to show post-cooling-off)
+  const installerName = searchParams.get('installerName') || 'Your installer'
+  const installerPhone = searchParams.get('installerPhone') || null
+  const installerEmail = searchParams.get('installerEmail') || null
+
+  const handleCancel = async () => {
+    if (!paymentId) {
+      setError('Missing payment reference. Please go back to your dashboard.')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/payments/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Refund failed')
+      router.push('/customer/refund-confirmed')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
@@ -39,7 +80,7 @@ export default function CancelPage() {
           <div>
             <h1 className="font-display font-extrabold text-2xl tracking-tight mb-1">Cancel this booking?</h1>
             <p className="text-sm text-ws-muted leading-relaxed mb-6">
-              You're within your 14-day cooling-off period and your install isn't confirmed yet — so you get a full refund, no questions asked.
+              You&apos;re within your 14-day cooling-off period and your install isn&apos;t confirmed yet — so you get a full refund, no questions asked.
             </p>
 
             <div className="border border-ws-border rounded-tile p-4 mb-5 bg-white">
@@ -51,7 +92,7 @@ export default function CancelPage() {
                 <span className="text-ws-muted">Your refund</span>
                 <span className="font-bold text-ws-green">£{refundAmount.toFixed(2)}</span>
               </div>
-              <p className="text-xs text-ws-muted mt-2">Back to your Visa ending 4471 in 3–5 working days.</p>
+              <p className="text-xs text-ws-muted mt-2">Back to your card in 3–5 working days.</p>
             </div>
 
             <div className="mb-5">
@@ -77,18 +118,23 @@ export default function CancelPage() {
               </ul>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
+            )}
+
             <button
-              onClick={() => setConfirming(true)}
-              className="w-full bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-green-deep transition-colors mb-3"
+              onClick={handleCancel}
+              disabled={loading}
+              className="w-full bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-green-deep transition-colors mb-3 disabled:opacity-60"
             >
-              Yes, cancel &amp; refund £{refundAmount.toFixed(2)}
+              {loading ? 'Processing…' : `Yes, cancel & refund £${refundAmount.toFixed(2)}`}
             </button>
             <Link href="/customer/dashboard" className="block text-center text-sm font-semibold text-ws-muted py-2">
               Keep my booking
             </Link>
 
             <p className="text-xs text-ws-muted mt-4 leading-relaxed">
-              Full refund any time within 14 days of paying your deposit — your cooling-off period. After 14 days, WattSmart's 5% is non-refundable. Your statutory rights (Consumer Contracts Regs &amp; RECC) are never affected.
+              Full refund any time within 14 days of paying your deposit — your cooling-off period. After 14 days, WattSmart&apos;s 5% is non-refundable. Your statutory rights (Consumer Contracts Regs &amp; RECC) are never affected.
             </p>
           </div>
         ) : (
@@ -96,7 +142,7 @@ export default function CancelPage() {
           <div>
             <h1 className="font-display font-extrabold text-2xl tracking-tight mb-1">Cancel your confirmed install?</h1>
             <p className="text-sm text-ws-muted leading-relaxed mb-6">
-              You're past the 14-day cooling-off period (which runs from when you paid your deposit). You can still cancel, but you'll lose part of your deposit. Here's exactly what.
+              You&apos;re past the 14-day cooling-off period (which runs from when you paid your deposit). You can still cancel, but you&apos;ll lose part of your deposit. Here&apos;s exactly what.
             </p>
 
             <div className="border border-ws-border rounded-tile p-4 mb-4 bg-white text-sm">
@@ -109,28 +155,36 @@ export default function CancelPage() {
                 <span className="text-ws-red-text">– £{wattsmart5pct.toFixed(2)}</span>
               </div>
               <div className="flex justify-between mb-2">
-                <span className="text-ws-muted">Your installer's charges</span>
+                <span className="text-ws-muted">Your installer&apos;s charges</span>
                 <span className="text-ws-red-text">– varies</span>
               </div>
               <div className="border-t border-ws-border pt-2 flex justify-between text-xs text-ws-muted">
-                <span>You'll lose at least</span>
+                <span>You&apos;ll lose at least</span>
                 <span className="font-bold text-ws-red-text">£{wattsmart5pct.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="border border-ws-amber-border bg-ws-amber-bg rounded-tile p-4 text-xs text-ws-amber-text leading-relaxed mb-5">
-              You and your installer both agreed to this in WattSmart's Terms of Use when the install was confirmed. Any installer charges, and any statutory cooling-off rights, are settled directly with them.
+              You and your installer both agreed to this in WattSmart&apos;s Terms of Use when the install was confirmed. Any installer charges, and any statutory cooling-off rights, are settled directly with them.
             </div>
 
             <p className="text-sm font-semibold mb-2">Contact your installer</p>
             <div className="border border-ws-border rounded-tile p-4 mb-5 text-sm bg-white">
-              <p className="font-bold mb-1">Northside Solar Co.</p>
-              <p className="text-ws-muted">✆ 0191 555 0142</p>
-              <p className="text-ws-muted">✉ hello@northsidesolar.co.uk</p>
+              <p className="font-bold mb-1">{installerName}</p>
+              {installerPhone && <p className="text-ws-muted">✆ {installerPhone}</p>}
+              {installerEmail && <p className="text-ws-muted">✉ {installerEmail}</p>}
             </div>
 
-            <button className="w-full border-2 border-ws-red-text text-ws-red-text rounded-btn py-3.5 font-bold text-sm hover:bg-ws-red-bg transition-colors mb-3">
-              Continue to cancel
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">{error}</p>
+            )}
+
+            <button
+              onClick={handleCancel}
+              disabled={loading}
+              className="w-full border-2 border-ws-red-text text-ws-red-text rounded-btn py-3.5 font-bold text-sm hover:bg-ws-red-bg transition-colors mb-3 disabled:opacity-60"
+            >
+              {loading ? 'Processing…' : 'Continue to cancel'}
             </button>
             <Link href="/customer/dashboard" className="block text-center text-sm font-semibold text-ws-green py-2">
               Keep my install
@@ -139,5 +193,13 @@ export default function CancelPage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function CancelPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: '#E7EAE7' }} />}>
+      <CancelPageInner />
+    </Suspense>
   )
 }

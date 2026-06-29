@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { sendQuotesReady } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   if (req.headers.get('x-cron-secret') !== process.env.CRON_SECRET) {
@@ -71,7 +72,65 @@ export async function POST(req: NextRequest) {
       await admin.from('jobs').update({ status: 'withdrawn' }).eq('id', job.id)
     }
 
-    return NextResponse.json({ ok: true, reassigned })
+    // -----------------------------------------------------------------------
+    // Transition enquiries that are older than 5 days with at least 1 quote
+    // submitted but still in quotes_requested status — no need to wait for 3.
+    // -----------------------------------------------------------------------
+    const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+
+    const { data: stalledEnquiries } = await admin
+      .from('enquiries')
+      .select(`
+        id,
+        reference,
+        created_at,
+        customers (
+          user_id,
+          profiles:user_id ( email )
+        )
+      `)
+      .eq('status', 'quotes_requested')
+      .lt('created_at', fiveDaysAgo)
+
+    let transitioned = 0
+
+    for (const enq of stalledEnquiries || []) {
+      // Check if there's at least 1 submitted quote
+      const { count: qCount } = await admin
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('enquiry_id', enq.id)
+        .eq('status', 'submitted')
+
+      if (!qCount || qCount < 1) continue
+
+      // Transition to quotes_received
+      await admin
+        .from('enquiries')
+        .update({ status: 'quotes_received' })
+        .eq('id', enq.id)
+
+      transitioned++
+
+      // Email the customer
+      try {
+        // Get customer email via auth admin
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const customer = (enq.customers as any) as { user_id: string } | null
+        if (customer?.user_id) {
+          const { data: authUser } = await admin.auth.admin.getUserById(customer.user_id)
+          if (authUser?.user?.email) {
+            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'
+            const loginUrl = `${siteUrl}/auth/login`
+            await sendQuotesReady(authUser.user.email, enq.reference, loginUrl).catch(console.error)
+          }
+        }
+      } catch (emailErr) {
+        console.error('Failed to email customer for enquiry', enq.id, emailErr)
+      }
+    }
+
+    return NextResponse.json({ ok: true, reassigned, transitioned })
   } catch (err) {
     console.error('Quote deadline cron error:', err)
     return NextResponse.json({ error: 'Deadline check failed' }, { status: 500 })
