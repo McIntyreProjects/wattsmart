@@ -1,13 +1,14 @@
 import Link from 'next/link'
 
-export default function QuoteBreakdownPage({ params }: { params: { enquiryId: string; quoteId: string } }) {
-  const quoteLabel = params.quoteId === 'quote-a' ? 'A' : 'B'
+export default async function QuoteBreakdownPage({ params }: { params: Promise<{ enquiryId: string; quoteId: string }> }) {
+  const { enquiryId, quoteId } = await params
+  const quoteLabel = quoteId === 'quote-a' ? 'A' : 'B'
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-5">
-          <Link href={`/customer/quotes/${params.enquiryId}`} className="text-ws-muted text-lg">←</Link>
+          <Link href={`/customer/quotes/${enquiryId}`} className="text-ws-muted text-lg">←</Link>
           <h1 className="font-display font-extrabold text-2xl tracking-tight">Quote {quoteLabel} · breakdown</h1>
         </div>
 
@@ -88,7 +89,7 @@ export default function QuoteBreakdownPage({ params }: { params: { enquiryId: st
         >
           Choose Quote {quoteLabel}
         </Link>
-        <Link href={`/customer/quotes/${params.enquiryId}`} className="block text-center text-sm text-ws-dark-green font-semibold mt-3">
+        <Link href={`/customer/quotes/${enquiryId}`} className="block text-center text-sm text-ws-dark-green font-semibold mt-3">
           ← Back to compare
         </Link>
       </div>

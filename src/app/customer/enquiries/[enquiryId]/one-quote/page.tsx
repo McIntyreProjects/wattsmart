@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-export default function OneQuotePage({ params }: { params: { enquiryId: string } }) {
+export default async function OneQuotePage({ params }: { params: Promise<{ enquiryId: string }> }) {
+  const { enquiryId } = await params
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -33,7 +34,7 @@ export default function OneQuotePage({ params }: { params: { enquiryId: string }
             <span className="text-ws-dark-green text-xs">🔒</span>
             <span className="text-xs text-ws-dark-green font-semibold">Held for you · 14 days left</span>
           </div>
-          <Link href={`/customer/enquiries/${params.enquiryId}/breakdown/quote-a`} className="flex items-center gap-2 mt-3 pt-3 border-t border-[#EDF1EE]">
+          <Link href={`/customer/enquiries/${enquiryId}/breakdown/quote-a`} className="flex items-center gap-2 mt-3 pt-3 border-t border-[#EDF1EE]">
             <span className="text-xs text-ws-dark-green">≡</span>
             <span className="text-xs font-semibold">See the full breakdown</span>
             <span className="ml-auto text-xs text-ws-dark-green font-semibold">View →</span>
@@ -59,7 +60,7 @@ export default function OneQuotePage({ params }: { params: { enquiryId: string }
           See this &amp; get more quotes →
         </button>
         <Link
-          href={`/customer/enquiries/${params.enquiryId}/deposit?quote=quote-a`}
+          href={`/customer/enquiries/${enquiryId}/deposit?quote=quote-a`}
           className="block w-full border-2 border-ws-green text-ws-dark-green rounded-btn py-3.5 font-bold text-base mt-3 text-center hover:bg-ws-green-tint transition-colors"
         >
           Choose Quote A now

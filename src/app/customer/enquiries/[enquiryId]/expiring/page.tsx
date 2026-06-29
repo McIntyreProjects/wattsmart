@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-export default function ExpiringQuotePage({ params }: { params: { enquiryId: string } }) {
+export default async function ExpiringQuotePage({ params }: { params: Promise<{ enquiryId: string }> }) {
+  const { enquiryId } = await params
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -39,7 +40,7 @@ export default function ExpiringQuotePage({ params }: { params: { enquiryId: str
             <span className="text-amber-700 font-semibold">2 days left</span>
           </div>
 
-          <Link href={`/customer/enquiries/${params.enquiryId}/breakdown/quote-a`} className="flex items-center gap-2 mt-3 pt-3 border-t border-[#EDF1EE]">
+          <Link href={`/customer/enquiries/${enquiryId}/breakdown/quote-a`} className="flex items-center gap-2 mt-3 pt-3 border-t border-[#EDF1EE]">
             <span className="text-xs text-ws-dark-green">≡</span>
             <span className="text-xs font-semibold">See the full breakdown</span>
             <span className="ml-auto text-xs text-ws-dark-green font-semibold">View →</span>
@@ -47,7 +48,7 @@ export default function ExpiringQuotePage({ params }: { params: { enquiryId: str
         </div>
 
         <Link
-          href={`/customer/enquiries/${params.enquiryId}/deposit?quote=quote-a`}
+          href={`/customer/enquiries/${enquiryId}/deposit?quote=quote-a`}
           className="block w-full bg-ws-green text-white rounded-btn py-4 font-bold text-base mt-4 text-center hover:bg-ws-dark-green transition-colors"
         >
           Choose Quote A

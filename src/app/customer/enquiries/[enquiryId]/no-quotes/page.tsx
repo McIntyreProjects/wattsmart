@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-export default function NoQuotesPage({ params }: { params: { enquiryId: string } }) {
+export default async function NoQuotesPage({ params }: { params: Promise<{ enquiryId: string }> }) {
+  const { enquiryId } = await params
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">

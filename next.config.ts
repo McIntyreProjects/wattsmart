@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
   images: {
@@ -26,7 +27,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://lh3.googleusercontent.com",
               "frame-src https://js.stripe.com https://hooks.stripe.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.postcodes.io https://api.anthropic.com https://maps.googleapis.com https://api.uk.trustpilot.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.postcodes.io https://api.anthropic.com https://maps.googleapis.com https://api.uk.trustpilot.com https://*.ingest.de.sentry.io",
             ].join('; '),
           },
         ],
@@ -35,4 +36,9 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: 'wattsmart',
+  project: 'javascript-nextjs',
+  silent: true,
+  sourcemaps: { disable: true },
+})
