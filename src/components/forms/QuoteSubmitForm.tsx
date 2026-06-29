@@ -29,6 +29,12 @@ export function QuoteSubmitForm({ jobId, products }: Props) {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    if (form.depositAmount && form.totalPrice && parseFloat(form.depositAmount) >= parseFloat(form.totalPrice)) {
+      setError('Deposit must be less than the total price.')
+      setLoading(false)
+      return
+    }
     const res = await fetch('/api/quotes/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

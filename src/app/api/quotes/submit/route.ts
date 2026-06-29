@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    if (parseFloat(depositAmount) >= parseFloat(totalPrice)) {
+      return NextResponse.json({ error: 'Deposit must be less than the total price.' }, { status: 400 })
+    }
+
     const { data: installer } = await supabase
       .from('installers')
       .select('id')
