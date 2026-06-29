@@ -230,3 +230,19 @@ export async function sendApplicationRejected(to: string, companyName: string, r
     `
   )
 }
+
+export async function sendInstallerInvite(to: string, companyName: string, inviteUrl: string) {
+  await send(
+    to,
+    `You've been invited to join ${companyName} on WattSmart`,
+    `
+    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">You've been invited.</h2>
+    <p>Someone at <strong>${companyName}</strong> has invited you to join their WattSmart workspace.</p>
+    <p>Click the button below to create your account and get started. This link expires in 7 days.</p>
+    <p style="margin:24px 0;">
+      <a href="${inviteUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">Accept invite →</a>
+    </p>
+    <p style="font-size:13px;color:#6B7B6E;">If you weren't expecting this, you can safely ignore it.</p>
+    `
+  )
+}

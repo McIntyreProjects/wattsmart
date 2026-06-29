@@ -30,10 +30,25 @@ export default function InstallerTeamPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Role>('member')
   const [inviteSent, setInviteSent] = useState(false)
+  const [inviteError, setInviteError] = useState('')
+  const [inviteLoading, setInviteLoading] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<string | null>(null)
 
-  const sendInvite = () => {
+  const sendInvite = async () => {
     if (!inviteEmail) return
+    setInviteLoading(true)
+    setInviteError('')
+    const res = await fetch('/api/installers/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inviteEmail, role: isManager ? inviteRole : 'member' }),
+    })
+    const json = await res.json()
+    setInviteLoading(false)
+    if (!res.ok) {
+      setInviteError(json.error || 'Failed to send invite')
+      return
+    }
     setMembers(prev => [...prev, {
       id: Date.now().toString(),
       name: '',
@@ -161,12 +176,15 @@ export default function InstallerTeamPage() {
                   </div>
                 ) : (
                   <>
+                    {inviteError && (
+                      <p className="text-xs text-[#C2603F] mb-1">{inviteError}</p>
+                    )}
                     <button
                       onClick={sendInvite}
-                      disabled={!inviteEmail}
+                      disabled={!inviteEmail || inviteLoading}
                       className="flex-1 bg-ws-green text-white rounded-btn py-2.5 font-bold text-sm hover:bg-ws-dark-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Send invite
+                      {inviteLoading ? 'Sending…' : 'Send invite'}
                     </button>
                     <button
                       onClick={() => { setShowInvite(false); setInviteEmail(''); setInviteRole('member') }}
