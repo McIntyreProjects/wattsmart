@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { QuoteSubmitForm } from '@/components/forms/QuoteSubmitForm'
+import { JobCompleteForm } from '@/components/forms/JobCompleteForm'
 import { Logo } from '@/components/ui/Logo'
 import { ProductTag } from '@/components/ui/Badge'
 import Link from 'next/link'
@@ -17,7 +18,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
   const { data: job } = await supabase
     .from('jobs')
     .select(`
-      id, status, quote_deadline_at,
+      id, status, quote_deadline_at, enquiry_id,
       enquiries (
         reference, products, property_type, property_age, ownership,
         roof_type, roof_orientation, shading,
@@ -92,10 +93,23 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
 
         {job.status === 'brief_sent' && !deadlinePast ? (
           <QuoteSubmitForm jobId={jobId} products={enq?.products || []} />
+        ) : job.status === 'install_complete' ? (
+          <div className="bg-ws-green-tint border border-ws-green/30 rounded-card p-5">
+            <p className="font-semibold text-ws-green-deep mb-1">Job complete</p>
+            <p className="text-sm text-ws-muted">This job has been marked as complete.</p>
+          </div>
         ) : (
           <p className="text-ws-muted text-sm">
-            {deadlinePast ? 'The quote deadline has passed.' : 'Quote already submitted for this job.'}
+            {deadlinePast && job.status === 'brief_sent' ? 'The quote deadline has passed.' : 'Quote already submitted for this job.'}
           </p>
+        )}
+
+        {['install_scheduled', 'install_confirmed', 'install_complete'].includes(job.status) &&
+          job.status !== 'install_complete' &&
+          job.enquiry_id && (
+          <div className="mt-8">
+            <JobCompleteForm jobId={jobId} enquiryId={job.enquiry_id} />
+          </div>
         )}
       </main>
     </div>
