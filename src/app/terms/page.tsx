@@ -21,7 +21,7 @@ const sections = [
   },
   {
     title: '5 · Installers',
-    body: 'Installers are independent businesses, verified against the relevant registers (MCS, RECC, etc.). The installation contract is between you and your chosen installer.',
+    body: 'Installers are independent businesses. We check their certifications against the relevant registers (MCS, RECC, etc.) before they go live. The installation contract is between you and your chosen installer.',
   },
   {
     title: '6 · Liability',

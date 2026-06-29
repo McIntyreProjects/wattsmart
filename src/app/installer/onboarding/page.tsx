@@ -106,7 +106,7 @@ export default function InstallerOnboardingPage() {
         {step === 3 && (
           <>
             <h1 className="font-display font-extrabold text-3xl tracking-tight mb-1">Just your MCS number.</h1>
-            <p className="text-sm text-ws-muted mb-7 leading-relaxed">Enter one ID — we pull your RECC, NICEIC, insurance and Companies House record from it, then check every register live.</p>
+            <p className="text-sm text-ws-muted mb-7 leading-relaxed">Enter your certification numbers below. Our team will manually check each one against the relevant register — usually within 1 working day.</p>
             <div className="max-w-md">
               <p className="text-xs text-ws-muted mb-5 leading-relaxed">Enter your certification numbers below and optionally upload a copy of each certificate. Our team will check these manually — usually within 1 working day.</p>
               <div className="flex flex-col gap-3">
