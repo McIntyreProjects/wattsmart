@@ -54,13 +54,13 @@ export default function HomePage() {
           <p className="text-sm text-ws-muted mt-3">Free, no obligation · about 3 minutes</p>
 
           {/* Trust bar */}
-          <div className="flex gap-6 mt-10">
+          <div className="grid grid-cols-3 gap-3 mt-10">
             {[
               { label: 'Certified', sub: 'every installer' },
               { label: 'Free to use', sub: 'getting quotes costs nothing' },
               { label: 'Private',   sub: 'no cold calls' },
             ].map(t => (
-              <div key={t.label}>
+              <div key={t.label} className="bg-ws-card border border-ws-border rounded-tile p-3">
                 <div className="text-sm font-semibold text-ws-ink">{t.label}</div>
                 <div className="text-xs text-ws-muted">{t.sub}</div>
               </div>
