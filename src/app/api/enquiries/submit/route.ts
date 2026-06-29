@@ -43,9 +43,9 @@ export async function POST(req: NextRequest) {
     let userId: string
 
     if (authError && authError.message.includes('already been registered')) {
-      const { data: existingUser } = await supabase.auth.admin.listUsers()
-      const found = existingUser?.users.find(u => u.email === email)
-      if (!found) throw new Error('User lookup failed')
+      const { data: listData, error: lookupError } = await supabase.auth.admin.listUsers()
+      const found = listData?.users.find(u => u.email === email)
+      if (!found || lookupError) throw new Error('User lookup failed')
       userId = found.id
     } else if (authError) {
       throw authError

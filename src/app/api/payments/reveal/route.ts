@@ -63,8 +63,7 @@ export async function POST(req: NextRequest) {
         .eq('installer_id', payment.installer_id)
         .single()
 
-      const { data: userList } = await admin.auth.admin.listUsers()
-      const custUser = userList?.users.find(u => u.id === user.id)
+      const { data: { user: custUser } } = await admin.auth.admin.getUserById(user.id)
       const ref = enquiry.reference
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'
 

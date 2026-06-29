@@ -46,10 +46,11 @@ export async function POST(req: NextRequest) {
       .eq('installer_id', payment.installer_id)
       .single()
 
-    const { data: userList } = await admin.auth.admin.listUsers()
     const custRec = Array.isArray(enquiry?.customers) ? enquiry?.customers[0] : enquiry?.customers
     const custUserId = (custRec as { user_id: string } | null)?.user_id
-    const custUser = userList?.users.find(u => u.id === custUserId)
+    const { data: { user: custUser } } = custUserId
+      ? await admin.auth.admin.getUserById(custUserId)
+      : { data: { user: null } }
 
     const amountStr = formatCurrency(payment.amount)
     const ref = enquiry?.reference || ''
