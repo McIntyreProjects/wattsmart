@@ -82,6 +82,10 @@ export async function GET() {
       certifications: certs ?? [],
       currentUserRole,
       metrics,
+      stripeConnect: {
+        accountId: installer.stripe_connect_account_id ?? null,
+        onboarded: installer.stripe_connect_onboarded ?? false,
+      },
     })
   } catch (err) {
     console.error('GET /api/installers/me error:', err)

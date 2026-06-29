@@ -21,6 +21,11 @@ type InstallerData = {
   status: string
 }
 
+type StripeConnect = {
+  accountId: string | null
+  onboarded: boolean
+}
+
 function Toggle({ on, locked }: { on: boolean; locked?: boolean }) {
   const [val, setVal] = useState(on)
   return (
@@ -48,6 +53,8 @@ const ALL_SERVICES = [
 export default function InstallerProfilePage() {
   const [installer, setInstaller] = useState<InstallerData | null>(null)
   const [certs, setCerts] = useState<Cert[]>([])
+  const [stripeConnect, setStripeConnect] = useState<StripeConnect>({ accountId: null, onboarded: false })
+  const [connectLoading, setConnectLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -58,10 +65,28 @@ export default function InstallerProfilePage() {
         if (data.error) { setError(data.error); return }
         setInstaller(data.installer)
         setCerts(data.certifications ?? [])
+        if (data.stripeConnect) setStripeConnect(data.stripeConnect)
       })
       .catch(() => setError('Failed to load profile'))
       .finally(() => setLoading(false))
   }, [])
+
+  async function startConnectOnboarding() {
+    setConnectLoading(true)
+    try {
+      const res = await fetch('/api/installers/connect/onboard', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Failed to start payout setup — please try again.')
+      }
+    } catch {
+      alert('Failed to start payout setup — please try again.')
+    } finally {
+      setConnectLoading(false)
+    }
+  }
 
   const displayName = installer?.trading_name || installer?.company_name || '—'
   const coverageText = installer
@@ -206,10 +231,34 @@ export default function InstallerProfilePage() {
 
             {/* Payout */}
             <p className="eyebrow mb-3">Payout account</p>
-            <div className="border border-ws-border rounded-tile px-4 py-3 flex justify-between items-center text-sm text-ws-muted">
-              <span>Not yet configured</span>
-              <button className="text-xs text-ws-dark-green font-semibold">Set up →</button>
-            </div>
+            {stripeConnect.onboarded ? (
+              <div className="border border-[#CDE6D7] rounded-tile px-4 py-3 bg-[#F1FAF5] flex justify-between items-center text-sm">
+                <span className="text-ws-dark-green font-semibold">Payouts active</span>
+                <span className="text-xs text-ws-muted">Bank details managed via Stripe</span>
+              </div>
+            ) : stripeConnect.accountId ? (
+              <div className="border border-ws-border rounded-tile px-4 py-3 flex justify-between items-center text-sm text-ws-muted">
+                <span>Setup incomplete</span>
+                <button
+                  onClick={startConnectOnboarding}
+                  disabled={connectLoading}
+                  className="text-xs text-ws-dark-green font-semibold disabled:opacity-50"
+                >
+                  {connectLoading ? 'Loading…' : 'Continue setup →'}
+                </button>
+              </div>
+            ) : (
+              <div className="border border-ws-border rounded-tile px-4 py-3 flex justify-between items-center text-sm text-ws-muted">
+                <span>Not yet configured</span>
+                <button
+                  onClick={startConnectOnboarding}
+                  disabled={connectLoading}
+                  className="text-xs text-ws-dark-green font-semibold disabled:opacity-50"
+                >
+                  {connectLoading ? 'Loading…' : 'Set up payouts →'}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
