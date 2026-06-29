@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' })
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-02-24.acacia' })
   try {
     // Auth check: caller must be logged in
     const supabase = await createClient()
@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
       .select('customers(user_id)')
       .eq('id', payment.enquiry_id)
       .single()
-    const ownerId = (enquiry?.customers as { user_id: string } | null)?.user_id
+    const custRefund = Array.isArray(enquiry?.customers) ? enquiry.customers[0] : enquiry?.customers
+    const ownerId = (custRefund as { user_id: string } | null)?.user_id
     if (ownerId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }

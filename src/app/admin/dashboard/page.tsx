@@ -58,15 +58,17 @@ export default async function AdminDashboard() {
       id: i.id,
       action: 'installer',
     })),
-    ...(expiringCerts || []).map((c: { id: string; installer_id: string; type: string; expires_at: string; installers: { company_name: string } | null }) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(expiringCerts || []).map((c: any) => ({
       type: 'warning' as const,
-      message: `${(c.installers as { company_name: string } | null)?.company_name} — ${c.type.toUpperCase()} expires ${new Date(c.expires_at).toLocaleDateString('en-GB')}`,
+      message: `${(Array.isArray(c.installers) ? c.installers[0] : c.installers)?.company_name} — ${c.type.toUpperCase()} expires ${new Date(c.expires_at).toLocaleDateString('en-GB')}`,
       id: c.id,
       action: null,
     })),
-    ...(overdueFees || []).map((f: { id: string; amount: number; installer_id: string; installers: { company_name: string } | null }) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(overdueFees || []).map((f: any) => ({
       type: 'danger' as const,
-      message: `Overdue fee: ${(f.installers as { company_name: string } | null)?.company_name} — ${formatCurrency(f.amount)}`,
+      message: `Overdue fee: ${(Array.isArray(f.installers) ? f.installers[0] : f.installers)?.company_name} — ${formatCurrency(f.amount)}`,
       id: f.id,
       action: null,
     })),

@@ -32,7 +32,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
 
   if (!job) redirect('/installer/dashboard')
 
-  const enq = job.enquiries as {
+  const enq = (Array.isArray(job.enquiries) ? job.enquiries[0] : job.enquiries) as {
     reference: string; products: string[]; property_type: string; property_age: string;
     ownership: string; roof_type?: string; roof_orientation?: string; shading?: string;
     monthly_elec_kwh: number; monthly_bill: number; goal: string;

@@ -20,7 +20,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       .single()
 
     if (error || !enquiry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if ((enquiry.customers as { user_id: string })?.user_id !== user.id) {
+    const custRecord = Array.isArray(enquiry.customers) ? enquiry.customers[0] : enquiry.customers
+    if ((custRecord as { user_id: string } | null)?.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

@@ -33,7 +33,8 @@ export async function GET(req: NextRequest) {
       .eq('id', payment.enquiry_id)
       .single()
 
-    const ownerId = (enquiry?.customers as { user_id: string } | null)?.user_id
+    const custOwner = Array.isArray(enquiry?.customers) ? enquiry.customers[0] : enquiry?.customers
+    const ownerId = (custOwner as { user_id: string } | null)?.user_id
     if (ownerId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }

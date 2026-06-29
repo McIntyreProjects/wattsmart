@@ -73,7 +73,7 @@ export default async function AdminFeesPage() {
             <span>Installer</span><span>Amount</span><span>Status</span><span>Date</span>
           </div>
           {(recentInvoices || []).map((inv, i) => {
-            const installer = inv.installers as { company_name: string } | null
+            const installer = (Array.isArray(inv.installers) ? inv.installers[0] : inv.installers) as { company_name: string } | null
             return (
               <div key={inv.id} className={`grid grid-cols-[2fr_1fr_1fr_1fr] items-center px-4 py-3.5 text-sm ${i < (recentInvoices || []).length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
                 <span className="font-medium text-ws-ink">{installer?.company_name || '—'}</span>

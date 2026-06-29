@@ -16,11 +16,11 @@ export async function GET(req: NextRequest) {
 
   if (!invite) return NextResponse.json({ error: 'Invite not found or expired' }, { status: 404 })
 
-  const installer = invite.installers as { company_name: string; trading_name: string | null }
+  const installer = (Array.isArray(invite.installers) ? invite.installers[0] : invite.installers) as { company_name: string; trading_name: string | null } | null
   return NextResponse.json({
     email: invite.email,
     role: invite.role,
-    companyName: installer.trading_name || installer.company_name,
+    companyName: installer?.trading_name || installer?.company_name || '',
   })
 }
 

@@ -16,7 +16,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     headless: false,      // show the browser so you can watch
-    slowMo: 200,          // slow enough to see what's happening
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',

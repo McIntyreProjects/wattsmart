@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const { data: quote } = await admin
       .from('quotes')
-      .select('id, enquiry_id, installer_id, job_id, deposit_amount')
+      .select('id, enquiry_id, installer_id, job_id, deposit_amount, installers(stripe_connect_account_id, stripe_connect_onboarded)')
       .eq('id', quoteId)
       .single()
 
@@ -39,26 +39,40 @@ export async function POST(req: NextRequest) {
     await admin.from('jobs').update({ status: 'quote_selected' }).eq('id', quote.job_id)
     await admin.from('enquiries').update({ status: 'installer_chosen' }).eq('id', quote.enquiry_id)
 
-    // Create Stripe payment intent (authorise only — capture on release)
+    // Create Stripe payment intent — use Connect if installer is onboarded
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-02-24.acacia' })
-    const amountPence = Math.round(quote.deposit_amount * 100)
-    const intent = await stripe.paymentIntents.create({
+    const depositAmount = quote.deposit_amount
+    const amountPence = Math.round(depositAmount * 100)
+
+    const installerRecord = Array.isArray(quote.installers) ? quote.installers[0] : quote.installers
+    const connectAccountId = (installerRecord as { stripe_connect_account_id?: string; stripe_connect_onboarded?: boolean } | null)?.stripe_connect_account_id
+    const connectOnboarded = (installerRecord as { stripe_connect_account_id?: string; stripe_connect_onboarded?: boolean } | null)?.stripe_connect_onboarded
+
+    const intentParams: Stripe.PaymentIntentCreateParams = {
       amount: amountPence,
       currency: 'gbp',
-      capture_method: 'manual',
       metadata: {
         enquiry_id: quote.enquiry_id,
         quote_id: quoteId,
         installer_id: quote.installer_id,
       },
-    })
+    }
+
+    if (connectAccountId && connectOnboarded) {
+      intentParams.application_fee_amount = Math.round(amountPence * 0.05)
+      intentParams.transfer_data = { destination: connectAccountId }
+    } else {
+      console.warn(`Installer ${quote.installer_id} does not have Stripe Connect set up — manual split required`)
+    }
+
+    const intent = await stripe.paymentIntents.create(intentParams)
 
     // Store payment record (not yet confirmed)
     await admin.from('payments').insert({
       enquiry_id: quote.enquiry_id,
       installer_id: quote.installer_id,
-      amount: quote.deposit_amount,
-      installer_amount: quote.deposit_amount * 0.95,
+      amount: depositAmount,
+      installer_amount: depositAmount * 0.95,
       stripe_payment_intent_id: intent.id,
       status: 'pending',
     })

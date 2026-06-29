@@ -90,7 +90,8 @@ export async function POST(req: NextRequest) {
 
       if (enq) {
         const { data: userList } = await admin.auth.admin.listUsers()
-        const custUserId = (enq.customers as { user_id: string })?.user_id
+        const custSubmit = Array.isArray(enq.customers) ? enq.customers[0] : enq.customers
+        const custUserId = (custSubmit as { user_id: string } | null)?.user_id
         const custUser = userList?.users.find(u => u.id === custUserId)
         if (custUser?.email) {
           const { sendQuotesReady } = await import('@/lib/email')

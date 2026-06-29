@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     let warned = 0
     for (const cert of certs || []) {
-      const installer = cert.installers as { contact_email: string }
+      const installer = (Array.isArray(cert.installers) ? cert.installers[0] : cert.installers) as { contact_email: string } | null
       if (!installer || !cert.expires_at) continue
 
       if (new Date(cert.expires_at) < thirtyDays) {

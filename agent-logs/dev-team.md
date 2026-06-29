@@ -371,3 +371,28 @@ Security requires immediate attention on the payment/cron API routes and the RLS
 ### Notes
 - All four pages handle the "no `installer_users` row yet" case by falling back to `installers.user_id` check and granting manager role
 - Fund payouts still show "—" — will need Stripe integration separately
+
+---
+
+## Stripe Connect Express Integration
+**Date:** 2026-06-29
+
+### Files Created
+- `supabase/migrations/005_stripe_connect.sql` — adds `stripe_connect_account_id` and `stripe_connect_onboarded` columns to installers table
+- `src/app/api/installers/connect/onboard/route.ts` — POST handler: creates Stripe Express account (if needed), stores account ID, returns account link URL for hosted onboarding
+- `src/app/api/webhooks/stripe-connect/route.ts` — webhook handler for `account.updated`; marks installer as onboarded when `details_submitted && charges_enabled`
+
+### Files Modified
+- `src/app/api/quotes/select/route.ts` — payment intent now uses `application_fee_amount` (5%) + `transfer_data.destination` when installer is Connect-onboarded; falls back gracefully if not. Removed `capture_method: 'manual'`.
+- `src/app/api/installers/me/route.ts` — response now includes `stripeConnect: { accountId, onboarded }`
+- `src/app/installer/profile/page.tsx` — Payout account section now shows: green "Payouts active" badge (onboarded), "Continue setup →" (account exists but incomplete), or "Set up payouts →" (not started). Clicking calls `/api/installers/connect/onboard` and redirects to Stripe.
+
+### Env vars to add in Vercel
+- `STRIPE_CONNECT_WEBHOOK_SECRET` — from Stripe Dashboard > Webhooks (for the Connect webhook endpoint)
+- `NEXT_PUBLIC_SITE_URL` — e.g. `https://wattsmart.co.uk` (used for redirect URLs in Connect onboarding)
+
+### Stripe Dashboard tasks
+1. Create a new webhook endpoint pointing to `https://wattsmart.co.uk/api/webhooks/stripe-connect`
+2. Subscribe it to the `account.updated` event
+3. Copy the signing secret into `STRIPE_CONNECT_WEBHOOK_SECRET` in Vercel
+4. Run `supabase db push` (or apply migration manually) to add the two new columns to the installers table

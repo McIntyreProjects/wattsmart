@@ -51,7 +51,7 @@ export default async function AdminAttentionPage() {
       icon: '£',
       iconBg: 'bg-ws-red-bg',
       iconColor: 'text-ws-red-text',
-      title: `Overdue fee ${formatCurrency(inv.amount)} — ${(inv.installers as { company_name: string } | null)?.company_name || 'Unknown'}`,
+      title: `Overdue fee ${formatCurrency(inv.amount)} — ${(inv.installers as unknown as { company_name: string } | null)?.company_name || 'Unknown'}`,
       sub: `Due ${new Date(inv.due_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
       href: '/admin/fees',
     })),

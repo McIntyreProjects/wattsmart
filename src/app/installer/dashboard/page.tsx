@@ -172,7 +172,7 @@ export default async function InstallerDashboard() {
         ) : (
           <div className="space-y-3">
             {jobs.map(job => {
-              const enq = job.enquiries as { reference: string; products: string[]; property_type: string; property_age: string; monthly_elec_kwh: number; goal: string } | null
+              const enq = (Array.isArray(job.enquiries) ? job.enquiries[0] : job.enquiries) as { reference: string; products: string[]; property_type: string; property_age: string; monthly_elec_kwh: number; goal: string } | null
               const st = statusLabel[job.status] || { label: job.status, variant: 'neutral' as const }
               const deadlinePast = new Date(job.quote_deadline_at) < new Date()
               return (

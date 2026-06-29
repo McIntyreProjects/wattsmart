@@ -40,7 +40,22 @@
       "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/[installerId]/page.tsx /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx)",
       "Bash(sed -i '' 's|href=\"/admin/installers/greenfield/verify-certs\"|href={`/admin/installers/${params.installerId}/verify-certs`}|' /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx)",
       "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/customer/enquiries/[enquiryId]/breakdown/[quoteId]/page.tsx \"/Users/stevenmcintyre/Documents/WattSmart/src/app/customer/enquiries/[enquiryId]/breakdown/[quoteId]/page.tsx\")",
-      "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx \"/Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/[installerId]/page.tsx\")"
+      "Bash(cp /Users/stevenmcintyre/Documents/WattSmart/.claude/worktrees/agent-a43fe6961a9693a48/src/app/admin/installers/[installerId]/page.tsx \"/Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/[installerId]/page.tsx\")",
+      "Bash(git rm *)",
+      "WebSearch",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(mkdir -p /Users/stevenmcintyre/Documents/WattSmart/src/app/api/installers/jobs/[jobId]/schedule)",
+      "Bash(mkdir -p \"/Users/stevenmcintyre/Documents/WattSmart/src/app/api/installers/jobs/[jobId]/schedule\")",
+      "Bash(git reset *)",
+      "Bash(mkdir -p \"/Users/stevenmcintyre/Documents/WattSmart/src/app/api/installers/jobs/[jobId]/complete\")",
+      "Bash(mkdir -p /Users/stevenmcintyre/Documents/WattSmart/src/app/api/customer/jobs/\\\\[jobId\\\\]/date)",
+      "Bash(mkdir -p /Users/stevenmcintyre/Documents/WattSmart/src/app/api/customer/jobs/\\\\[jobId\\\\]/date-info)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git fetch *)",
+      "Bash(npm run *)",
+      "Bash(xargs sed -i '' 's/2024-12-18.acacia/2025-02-24.acacia/g')"
     ]
   }
 }

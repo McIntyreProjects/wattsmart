@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     if (membership) {
       installerId = membership.installer_id
       callerRole = membership.role as 'manager' | 'member'
-      const inst = membership.installers as { company_name: string; trading_name: string | null }
-      companyDisplay = inst.trading_name || inst.company_name
+      const inst = (Array.isArray(membership.installers) ? membership.installers[0] : membership.installers) as { company_name: string; trading_name: string | null } | null
+      companyDisplay = inst?.trading_name || inst?.company_name || ''
     } else {
       // Primary owner path
       const { data: ownerRow } = await supabase

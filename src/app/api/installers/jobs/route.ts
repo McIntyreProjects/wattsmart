@@ -38,17 +38,17 @@ export async function GET() {
       ...j,
       enquiries: j.enquiries
         ? {
-            reference: (j.enquiries as Record<string, unknown>).reference,
-            products: (j.enquiries as Record<string, unknown>).products,
-            postcode_area: ((j.enquiries as Record<string, unknown>).postcode as string)?.split(' ')[0]?.replace(/\d+$/, '') || '',
-            property_type: (j.enquiries as Record<string, unknown>).property_type,
-            property_age: (j.enquiries as Record<string, unknown>).property_age,
-            monthly_elec_kwh: (j.enquiries as Record<string, unknown>).monthly_elec_kwh,
-            monthly_bill: (j.enquiries as Record<string, unknown>).monthly_bill,
-            goal: (j.enquiries as Record<string, unknown>).goal,
-            recommended_panels: (j.enquiries as Record<string, unknown>).recommended_panels,
-            recommended_system_kwp: (j.enquiries as Record<string, unknown>).recommended_system_kwp,
-            recommended_battery_kwh: (j.enquiries as Record<string, unknown>).recommended_battery_kwh,
+            reference: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).reference,
+            products: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).products,
+            postcode_area: (((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).postcode as string)?.split(' ')[0]?.replace(/\d+$/, '') || '',
+            property_type: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).property_type,
+            property_age: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).property_age,
+            monthly_elec_kwh: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).monthly_elec_kwh,
+            monthly_bill: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).monthly_bill,
+            goal: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).goal,
+            recommended_panels: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).recommended_panels,
+            recommended_system_kwp: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).recommended_system_kwp,
+            recommended_battery_kwh: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).recommended_battery_kwh,
           }
         : null,
     }))

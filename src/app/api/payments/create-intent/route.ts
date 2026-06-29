@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' })
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-02-24.acacia' })
   try {
     const { quoteId } = await req.json()
 
@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
       .eq('id', quote.enquiry_id)
       .single()
 
-    if ((enquiry?.customers as { user_id: string })?.user_id !== user.id) {
+    const custRec = Array.isArray(enquiry?.customers) ? enquiry.customers[0] : enquiry?.customers
+    if ((custRec as { user_id: string } | null)?.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

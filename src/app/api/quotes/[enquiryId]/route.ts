@@ -16,7 +16,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ enqu
       .single()
 
     if (!enquiry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if ((enquiry.customers as { user_id: string })?.user_id !== user.id) {
+    const custQ = Array.isArray(enquiry.customers) ? enquiry.customers[0] : enquiry.customers
+    if ((custQ as { user_id: string } | null)?.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
