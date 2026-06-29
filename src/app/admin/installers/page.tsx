@@ -1,6 +1,29 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
-export default function AdminInstallersPage() {
+export default async function AdminInstallersPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+
+  const admin = await createAdminClient()
+  const { data: installers } = await admin
+    .from('installers')
+    .select('id, company_name, trading_name, status, contact_name, contact_email, created_at')
+    .order('created_at', { ascending: false })
+
+  const all = installers || []
+  const active = all.filter(i => i.status === 'active')
+  const pending = all.filter(i => i.status === 'pending')
+  const paused = all.filter(i => i.status === 'paused')
+
+  const statusStyle = (status: string) => {
+    if (status === 'active') return 'bg-[#F1FAF5] text-ws-dark-green border border-[#CDE6D7]'
+    if (status === 'pending') return 'bg-amber-50 text-amber-700 border border-amber-200'
+    return 'bg-[#F2F6F3] text-ws-muted border border-ws-border'
+  }
+
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
@@ -14,59 +37,44 @@ export default function AdminInstallersPage() {
         </div>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="font-display font-extrabold text-2xl tracking-tight mb-5">Installer management</h1>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-6">
           {[
-            { label: 'Flagged · 1', active: true },
-            { label: 'Active · 63' },
-            { label: 'Paused · 4' },
+            { label: `Active · ${active.length}` },
+            { label: `Pending · ${pending.length}`, highlight: pending.length > 0 },
+            { label: `Paused · ${paused.length}` },
           ].map((tab) => (
-            <button key={tab.label} className={`rounded-lg px-3 py-1.5 text-sm ${
-              tab.active ? 'border-2 border-ws-green bg-[#F1FAF5] text-ws-dark-green font-bold' : 'border border-ws-border text-ws-muted'
-            }`}>{tab.label}</button>
+            <span key={tab.label} className={`rounded-lg px-3 py-1.5 text-sm ${
+              tab.highlight ? 'border-2 border-ws-green bg-[#F1FAF5] text-ws-dark-green font-bold' : 'border border-ws-border text-ws-muted'
+            }`}>{tab.label}</span>
           ))}
         </div>
 
-        {/* Flagged card */}
-        <div className="border border-ws-border rounded-tile p-5">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <p className="font-display font-extrabold text-xl tracking-tight">Greenfield Renewables Ltd</p>
-              <p className="text-xs text-ws-subtle mt-1">Applied 2 days ago · York · solar + battery</p>
-            </div>
-            <span className="text-xs border border-amber-200 bg-amber-50 text-amber-700 rounded-pill px-3 py-1 whitespace-nowrap">auto-flagged</span>
+        {/* All installers table */}
+        <div className="border border-ws-border rounded-tile overflow-hidden">
+          <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] bg-[#FAFBFA] border-b border-ws-border px-5 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
+            <span>Company</span><span>Contact</span><span>Email</span><span>Status</span><span></span>
           </div>
-
-          <div className="flex flex-col gap-2 mb-4">
-            {[
-              { label: 'MCS', value: 'NAP-1100-2284', status: 'pending', ok: false },
-              { label: 'RECC', value: 'RECC-00821', status: 'pending', ok: false },
-              { label: 'Companies House', value: '08842210', status: 'pending', ok: false },
-              { label: 'Public liability insurance', value: '⚠ expires 24 Jun', status: 'expiring', ok: false },
-            ].map((r) => (
-              <div key={r.label} className="flex justify-between items-center text-sm">
-                <span>{r.label}</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-ws-muted">{r.value}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-pill font-semibold ${
-                    r.status === 'expiring' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-[#F2F6F3] text-ws-muted border border-ws-border'
-                  }`}>{r.status === 'expiring' ? '⚠ expiring' : 'needs check'}</span>
-                </div>
+          {all.map((inst, i) => (
+            <div key={inst.id} className={`grid grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] items-center px-5 py-4 text-sm ${i < all.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+              <div>
+                <p className="font-bold">{inst.trading_name || inst.company_name}</p>
+                {inst.trading_name && inst.trading_name !== inst.company_name && (
+                  <p className="text-xs text-ws-subtle mt-0.5">{inst.company_name}</p>
+                )}
               </div>
-            ))}
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700 leading-relaxed mb-4">
-            Certificates need manual verification. Click "Verify certs" to check each number on the relevant register before approving.
-          </div>
-
-          <div className="flex gap-3">
-            <a href="/admin/installers/greenfield/verify-certs" className="flex-1 bg-ws-green text-white rounded-btn py-3 font-bold text-sm hover:bg-ws-dark-green transition-colors text-center">Verify certs</a>
-            <button className="border-2 border-ws-border rounded-btn px-5 py-3 font-semibold text-sm text-ws-ink hover:bg-ws-border transition-colors">Decline</button>
-          </div>
+              <span className="text-ws-muted">{inst.contact_name || '—'}</span>
+              <span className="text-ws-muted text-xs truncate">{inst.contact_email || '—'}</span>
+              <span className={`text-xs rounded-lg px-2.5 py-1 font-semibold inline-block w-fit ${statusStyle(inst.status)}`}>{inst.status}</span>
+              <Link href={`/admin/installers/${inst.id}`} className="text-ws-dark-green font-semibold text-sm">View</Link>
+            </div>
+          ))}
+          {all.length === 0 && (
+            <div className="px-5 py-8 text-center text-ws-muted text-sm">No installers found.</div>
+          )}
         </div>
       </div>
     </div>
