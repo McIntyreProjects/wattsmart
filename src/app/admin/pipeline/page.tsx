@@ -21,9 +21,11 @@ const COLUMNS: { status: string[]; label: string; done?: boolean; amber?: boolea
 export default async function AdminPipelinePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+  if (!user) redirect('/auth/login?type=admin')
 
   const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
   const { data: enquiries } = await admin
     .from('enquiries')
     .select('id, reference, postcode, products, status, created_at')

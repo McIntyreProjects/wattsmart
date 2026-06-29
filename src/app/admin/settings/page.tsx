@@ -1,13 +1,17 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 const sections = ['Business & billing', 'Payouts', 'Notifications & digest', 'Automation', 'Team & access', 'Data & legal']
 
 export default async function AdminSettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+  if (!user) redirect('/auth/login?type=admin')
+
+  const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">

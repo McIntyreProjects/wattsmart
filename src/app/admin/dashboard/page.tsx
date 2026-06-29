@@ -9,9 +9,11 @@ import { AdminActions } from '@/components/dashboard/AdminActions'
 export default async function AdminDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+  if (!user) redirect('/auth/login?type=admin')
 
   const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 86400000).toISOString()

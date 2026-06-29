@@ -5,9 +5,11 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 export default async function AdminInstallersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+  if (!user) redirect('/auth/login?type=admin')
 
   const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
   const { data: installers } = await admin
     .from('installers')
     .select('id, company_name, trading_name, status, contact_name, contact_email, created_at')

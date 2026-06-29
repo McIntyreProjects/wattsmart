@@ -1,40 +1,100 @@
-'use client'
-import { useState } from 'react'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
-type Role = 'manager' | 'member'
-type MemberStatus = 'active' | 'pending'
+export default async function AdminInstallerDetailPage({
+  params,
+}: {
+  params: Promise<{ installerId: string }>
+}) {
+  const { installerId } = await params
 
-type TeamMember = {
-  id: string
-  name: string
-  email: string
-  role: Role
-  status: MemberStatus
-  joinedAt: string
-}
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login?type=admin')
 
-const MEMBERS: TeamMember[] = [
-  { id: '1', name: 'Daniel Okafor', email: 'daniel@northsidesolar.co.uk', role: 'manager', status: 'active',  joinedAt: '12 Jun 2026' },
-  { id: '2', name: 'Priya Mehta',   email: 'priya@northsidesolar.co.uk',  role: 'member',  status: 'active',  joinedAt: '18 Jun 2026' },
-  { id: '3', name: '',              email: 'tom@northsidesolar.co.uk',     role: 'member',  status: 'pending', joinedAt: '' },
-]
+  const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
 
-type Tab = 'overview' | 'certs' | 'team'
+  const [
+    { data: installer },
+    { data: certs },
+    { data: teamRows },
+    { count: jobCount },
+    { count: quoteCount },
+    { count: completedCount },
+  ] = await Promise.all([
+    admin
+      .from('installers')
+      .select('id, company_name, trading_name, contact_name, contact_email, contact_phone, status, years_trading, products, coverage_postcodes, base_postcode, created_at, stripe_connect_onboarded')
+      .eq('id', installerId)
+      .single(),
+    admin
+      .from('certifications')
+      .select('type, certification_number, status, expires_at')
+      .eq('installer_id', installerId),
+    admin
+      .from('installer_users')
+      .select('user_id, role, status')
+      .eq('installer_id', installerId),
+    admin
+      .from('jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('installer_id', installerId),
+    admin
+      .from('quotes')
+      .select('*', { count: 'exact', head: true })
+      .eq('installer_id', installerId)
+      .eq('status', 'submitted'),
+    admin
+      .from('jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('installer_id', installerId)
+      .eq('status', 'complete'),
+  ])
 
-export default function AdminInstallerDetailPage() {
-  const [tab, setTab] = useState<Tab>('team')
-  const [members, setMembers] = useState<TeamMember[]>(MEMBERS)
-  const [confirmRemove, setConfirmRemove] = useState<string | null>(null)
-  const [pendingRoleChange, setPendingRoleChange] = useState<{ id: string; role: Role } | null>(null)
+  if (!installer) redirect('/admin/installers')
 
-  const changeRole = (id: string, role: Role) =>
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, role } : m))
-
-  const removeMember = (id: string) => {
-    setMembers(prev => prev.filter(m => m.id !== id))
-    setConfirmRemove(null)
+  // Look up emails for team members via admin auth API
+  type TeamMember = {
+    user_id: string
+    role: string
+    status: string
+    email: string
+    name: string
   }
+
+  let team: TeamMember[] = []
+  if (teamRows && teamRows.length > 0) {
+    team = await Promise.all(
+      teamRows.map(async (row) => {
+        const { data } = await admin.auth.admin.getUserById(row.user_id)
+        return {
+          user_id: row.user_id,
+          role: row.role as string,
+          status: row.status as string,
+          email: data?.user?.email ?? '',
+          name: (data?.user?.user_metadata?.full_name as string) ?? '',
+        }
+      })
+    )
+  }
+
+  const displayName = installer.trading_name || installer.company_name
+  const basePostcode = installer.base_postcode ?? ''
+  const products = (installer.products as string[] | null) ?? []
+  const createdAt = new Date(installer.created_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+
+  const statusBadge =
+    installer.status === 'active'
+      ? 'border-[#CDE6D7] bg-[#F1FAF5] text-ws-dark-green'
+      : installer.status === 'pending'
+      ? 'border-amber-200 bg-amber-50 text-amber-700'
+      : 'border-ws-border bg-white text-ws-muted'
+
+  const activeCount = team.filter(m => m.status === 'active').length
+  const pendingCount = team.filter(m => m.status === 'pending').length
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
@@ -54,143 +114,133 @@ export default function AdminInstallerDetailPage() {
 
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h1 className="font-display font-extrabold text-2xl tracking-tight">Northside Solar Co.</h1>
-            <p className="text-xs text-ws-muted mt-1">Durham · solar + battery · active since Jun 2026</p>
+            <h1 className="font-display font-extrabold text-2xl tracking-tight">{displayName}</h1>
+            <p className="text-xs text-ws-muted mt-1">
+              {[basePostcode, products.join(' + '), `active since ${createdAt}`].filter(Boolean).join(' · ')}
+            </p>
           </div>
-          <span className="text-xs border border-[#CDE6D7] bg-[#F1FAF5] text-ws-dark-green rounded-pill px-3 py-1 font-semibold">Active</span>
+          <span className={`text-xs border rounded-pill px-3 py-1 font-semibold capitalize ${statusBadge}`}>
+            {installer.status}
+          </span>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
-          {([
-            { id: 'overview', label: 'Overview' },
-            { id: 'certs',    label: 'Certificates' },
-            { id: 'team',     label: `Team · ${MEMBERS.length}` },
-          ] as { id: Tab; label: string }[]).map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`rounded-lg px-3 py-1.5 text-sm ${
-                tab === t.id
-                  ? 'border-2 border-ws-green bg-[#F1FAF5] text-ws-dark-green font-bold'
-                  : 'border border-ws-border text-ws-muted hover:text-ws-ink'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        {/* Overview */}
+        <h2 className="font-semibold text-ws-ink mb-3 mt-2">Overview</h2>
+        <div className="border border-ws-border rounded-tile p-5 bg-white text-sm mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Contact</p>
+            <p className="font-semibold">{installer.contact_name || '—'}</p>
+            <p className="text-xs text-ws-muted">{installer.contact_email}</p>
+            {installer.contact_phone && <p className="text-xs text-ws-muted">{installer.contact_phone}</p>}
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Trading since</p>
+            <p className="font-semibold">{installer.years_trading ? `${installer.years_trading} year${installer.years_trading === 1 ? '' : 's'}` : '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Jobs</p>
+            <p className="font-semibold">{jobCount ?? 0} total · {completedCount ?? 0} completed</p>
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Submitted quotes</p>
+            <p className="font-semibold">{quoteCount ?? 0}</p>
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Coverage</p>
+            <p className="font-semibold text-xs">{((installer.coverage_postcodes as string[] | null) ?? []).join(', ') || '—'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Stripe connected</p>
+            <p className="font-semibold">{installer.stripe_connect_onboarded ? 'Yes' : 'No'}</p>
+          </div>
         </div>
 
-        {tab === 'overview' && (
-          <div className="border border-ws-border rounded-tile p-5 bg-white text-sm text-ws-muted">
-            Overview content — jobs, fees, performance summary.
-          </div>
-        )}
-
-        {tab === 'certs' && (
-          <div className="flex flex-col gap-3">
-            {[
-              { label: 'MCS', number: 'NAP-1100-2284', status: 'verified' },
-              { label: 'RECC', number: 'RECC-00821', status: 'verified' },
-              { label: 'Companies House', number: '08842210', status: 'verified' },
-              { label: 'Public liability', number: 'Via upload', status: 'verified' },
-            ].map(c => (
-              <div key={c.label} className="border border-[#CDE6D7] bg-[#F1FAF5] rounded-tile px-4 py-3 flex justify-between items-center text-sm">
-                <div>
-                  <p className="font-semibold">{c.label}</p>
-                  <p className="text-xs text-ws-muted font-mono mt-0.5">{c.number}</p>
+        {/* Certificates */}
+        <h2 className="font-semibold text-ws-ink mb-3">Certificates</h2>
+        {certs && certs.length > 0 ? (
+          <div className="flex flex-col gap-3 mb-6">
+            {certs.map((c) => {
+              const isVerified = c.status === 'verified'
+              return (
+                <div
+                  key={c.type}
+                  className={`border rounded-tile px-4 py-3 flex justify-between items-center text-sm ${
+                    isVerified ? 'border-[#CDE6D7] bg-[#F1FAF5]' : 'border-ws-border bg-white'
+                  }`}
+                >
+                  <div>
+                    <p className="font-semibold capitalize">{c.type}</p>
+                    <p className="text-xs text-ws-muted font-mono mt-0.5">{c.certification_number || 'No number'}</p>
+                    {c.expires_at && (
+                      <p className="text-xs text-ws-muted mt-0.5">
+                        Expires {new Date(c.expires_at).toLocaleDateString('en-GB')}
+                      </p>
+                    )}
+                  </div>
+                  <span className={`text-xs font-semibold ${isVerified ? 'text-ws-dark-green' : 'text-amber-700'}`}>
+                    {isVerified ? '✓ Verified' : c.status}
+                  </span>
                 </div>
-                <span className="text-xs font-semibold text-ws-dark-green">✓ Verified</span>
-              </div>
-            ))}
+              )
+            })}
             <Link
-              href="/admin/installers/greenfield/verify-certs"
+              href={`/admin/installers/${installerId}/verify-certs`}
               className="text-sm text-ws-dark-green font-semibold hover:underline mt-1"
             >
               Re-verify certificates →
             </Link>
           </div>
+        ) : (
+          <div className="border border-ws-border rounded-tile px-4 py-3 bg-white text-sm text-ws-muted mb-6">
+            No certificates on record.
+          </div>
         )}
 
-        {tab === 'team' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-ws-muted">{members.filter(m => m.status === 'active').length} active · {members.filter(m => m.status === 'pending').length} invite pending</p>
-              <div className="text-xs text-ws-muted bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-3 py-1.5">
-                Admin view — changes take effect immediately
-              </div>
+        {/* Team */}
+        <h2 className="font-semibold text-ws-ink mb-3">Team · {team.length}</h2>
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-ws-muted">{activeCount} active · {pendingCount} invite pending</p>
+            <div className="text-xs text-ws-muted bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-3 py-1.5">
+              Admin view — read only
             </div>
+          </div>
 
-            <div className="border border-ws-border rounded-tile overflow-hidden mb-4">
-              {members.map((m, i) => (
-                <div key={m.id} className={`px-5 py-4 bg-white ${i < members.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+          {team.length > 0 ? (
+            <div className="border border-ws-border rounded-tile overflow-hidden">
+              {team.map((m, i) => (
+                <div key={m.user_id} className={`px-5 py-4 bg-white ${i < team.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         m.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-[#EAF5EE] text-ws-dark-green'
                       }`}>
-                        {m.name ? m.name.split(' ').map(n => n[0]).join('').slice(0, 2) : '?'}
+                        {m.name ? m.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : '?'}
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm">
                           {m.name || <span className="text-ws-muted italic font-normal">Invite pending</span>}
                         </p>
                         <p className="text-xs text-ws-muted">{m.email}</p>
-                        {m.joinedAt && <p className="text-xs text-ws-subtle">Joined {m.joinedAt}</p>}
                       </div>
                     </div>
-
                     <div className="flex items-center gap-3 flex-shrink-0">
                       {m.status === 'pending' ? (
                         <span className="text-xs border border-amber-200 bg-amber-50 text-amber-700 rounded-pill px-2.5 py-1">Invite pending</span>
-                      ) : pendingRoleChange?.id === m.id ? (
-                        <div className="flex items-center gap-1.5 text-xs">
-                          <span className="text-ws-muted">Change {m.name || 'this user'} to {pendingRoleChange.role === 'manager' ? 'Manager' : 'Member'}?</span>
-                          <button
-                            onClick={() => { changeRole(m.id, pendingRoleChange.role); setPendingRoleChange(null) }}
-                            className="font-semibold text-ws-dark-green hover:underline"
-                          >
-                            Confirm
-                          </button>
-                          <span className="text-ws-subtle">·</span>
-                          <button
-                            onClick={() => setPendingRoleChange(null)}
-                            className="text-ws-muted hover:underline"
-                          >
-                            Cancel
-                          </button>
-                        </div>
                       ) : (
-                        <select
-                          value={m.role}
-                          onChange={e => setPendingRoleChange({ id: m.id, role: e.target.value as Role })}
-                          className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-ws-green"
-                        >
-                          <option value="member">Member</option>
-                          <option value="manager">Manager</option>
-                        </select>
-                      )}
-
-                      {confirmRemove === m.id ? (
-                        <div className="flex gap-1.5">
-                          <button onClick={() => removeMember(m.id)} className="text-xs font-semibold text-[#C2603F] hover:underline">Confirm remove</button>
-                          <span className="text-ws-subtle text-xs">·</span>
-                          <button onClick={() => setConfirmRemove(null)} className="text-xs text-ws-muted hover:underline">Cancel</button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setConfirmRemove(m.id)} className="text-xs text-ws-muted hover:text-[#C2603F]">Remove</button>
+                        <span className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white capitalize">{m.role}</span>
                       )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            <p className="text-xs text-ws-muted leading-relaxed">
-              Removing a user immediately revokes their access to this installer&apos;s workspace. The installer&apos;s manager will be notified by email.
-            </p>
-          </div>
-        )}
+          ) : (
+            <div className="border border-ws-border rounded-tile px-4 py-3 bg-white text-sm text-ws-muted">
+              No team members yet.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

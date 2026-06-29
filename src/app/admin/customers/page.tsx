@@ -5,9 +5,11 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 export default async function AdminCustomersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
+  if (!user) redirect('/auth/login?type=admin')
 
   const admin = await createAdminClient()
+  const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+  if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
   const { data: customers } = await admin
     .from('customers')
     .select('id, first_name, last_name, created_at, enquiries(id, reference, products, status)')
