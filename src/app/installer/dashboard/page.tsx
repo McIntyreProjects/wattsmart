@@ -11,10 +11,34 @@ export default async function InstallerDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login?type=installer')
 
+  // Resolve installer: team members have a row in installer_users but not in installers,
+  // so check installer_users first, then fall back to installers.user_id (primary owner).
+  let installerId: string | null = null
+
+  const { data: membership } = await supabase
+    .from('installer_users')
+    .select('installer_id')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (membership) {
+    installerId = membership.installer_id
+  } else {
+    const { data: ownerRow } = await supabase
+      .from('installers')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!ownerRow) redirect('/installer/register')
+    installerId = ownerRow!.id
+  }
+
   const { data: installer } = await supabase
     .from('installers')
     .select('id, company_name, status')
-    .eq('user_id', user.id)
+    .eq('id', installerId)
     .single()
 
   if (!installer) redirect('/installer/register')
@@ -51,6 +75,36 @@ export default async function InstallerDashboard() {
     installation_confirmed: { label: 'Install confirmed', variant: 'success' },
     complete:               { label: 'Complete',          variant: 'neutral' },
     withdrawn:              { label: 'Withdrawn',         variant: 'neutral' },
+  }
+
+  if (installer.status === 'rejected') {
+    return (
+      <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+        <nav className="bg-ws-card border-b border-ws-border">
+          <div className="max-w-content mx-auto px-5 py-4"><Logo /></div>
+        </nav>
+        <div className="max-w-content mx-auto px-5 py-20 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-6" style={{ background: '#FEE2E2' }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1
+            className="text-2xl font-bold text-ws-ink mb-3"
+            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+          >
+            Application unsuccessful.
+          </h1>
+          <p className="text-ws-muted text-sm leading-relaxed max-w-xs mx-auto mb-4">
+            Unfortunately we were unable to approve your installer application at this time.
+          </p>
+          <p className="text-ws-muted text-sm leading-relaxed max-w-xs mx-auto">
+            If you believe this is an error or your circumstances have changed, please contact{' '}
+            <a href="mailto:hello@wattsmart.co.uk" className="text-ws-green hover:underline">hello@wattsmart.co.uk</a>.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (installer.status === 'pending') {
