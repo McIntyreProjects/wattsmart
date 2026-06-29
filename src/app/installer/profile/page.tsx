@@ -26,29 +26,50 @@ type StripeConnect = {
   onboarded: boolean
 }
 
-function Toggle({ on, locked }: { on: boolean; locked?: boolean }) {
-  const [val, setVal] = useState(on)
-  return (
-    <button
-      onClick={() => !locked && setVal(!val)}
-      disabled={locked}
-      className={`w-11 h-6 rounded-full flex items-center px-0.5 flex-shrink-0 transition-colors ${
-        locked ? 'bg-[#E3DABE] cursor-not-allowed' : val ? 'bg-ws-green' : 'bg-[#D9E1DC]'
-      }`}
-    >
-      <span className={`w-5 h-5 rounded-full bg-white transition-transform flex items-center justify-center ${val && !locked ? 'translate-x-5' : ''}`}>
-        {locked && <span className="text-[9px]">🔒</span>}
-      </span>
-    </button>
-  )
-}
-
 const ALL_SERVICES = [
   { label: 'Solar PV',        sub: 'Requires MCS + RECC',         products: ['solar_pv', 'solar'] },
   { label: 'Battery storage', sub: 'Requires MCS',                products: ['battery', 'battery_storage'] },
   { label: 'EV chargers',     sub: 'Requires OZEV + NICEIC',      products: ['ev_charger', 'ev_chargers'] },
   { label: 'Heat pumps',      sub: 'Requires MCS + NAPIT',        products: ['heat_pump', 'heat_pumps'] },
 ]
+
+function ServiceToggle({
+  label, sub, active, locked, onToggle,
+}: {
+  label: string
+  sub: string
+  active: boolean
+  locked: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      onClick={() => !locked && onToggle()}
+      disabled={locked}
+      className={`w-11 h-6 rounded-full flex items-center px-0.5 flex-shrink-0 transition-colors ${
+        locked ? 'bg-[#E3DABE] cursor-not-allowed' : active ? 'bg-ws-green' : 'bg-[#D9E1DC]'
+      }`}
+      aria-label={`${label} toggle`}
+    >
+      <span className={`w-5 h-5 rounded-full bg-white transition-transform flex items-center justify-center ${active && !locked ? 'translate-x-5' : ''}`}>
+        {locked && <span className="text-[9px]">🔒</span>}
+      </span>
+    </button>
+  )
+}
+
+async function patchInstaller(updates: Record<string, unknown>) {
+  const res = await fetch('/api/installers/me', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error ?? 'Failed to save')
+  }
+  return res.json()
+}
 
 export default function InstallerProfilePage() {
   const [installer, setInstaller] = useState<InstallerData | null>(null)
@@ -57,6 +78,19 @@ export default function InstallerProfilePage() {
   const [connectLoading, setConnectLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  // Edit state per section
+  const [editingContact, setEditingContact] = useState(false)
+  const [contactDraft, setContactDraft] = useState({ trading_name: '', contact_name: '', contact_phone: '' })
+  const [contactSaving, setContactSaving] = useState(false)
+  const [contactError, setContactError] = useState('')
+
+  const [editingCoverage, setEditingCoverage] = useState(false)
+  const [coverageDraft, setCoverageDraft] = useState('')
+  const [coverageSaving, setCoverageSaving] = useState(false)
+  const [coverageError, setCoverageError] = useState('')
+
+  const [servicesSaving, setServicesSaving] = useState(false)
 
   useEffect(() => {
     fetch('/api/installers/me')
@@ -88,12 +122,88 @@ export default function InstallerProfilePage() {
     }
   }
 
+  function openContactEdit() {
+    if (!installer) return
+    setContactDraft({
+      trading_name: installer.trading_name ?? '',
+      contact_name: installer.contact_name ?? '',
+      contact_phone: installer.contact_phone ?? '',
+    })
+    setContactError('')
+    setEditingContact(true)
+  }
+
+  async function saveContact() {
+    if (!installer) return
+    setContactSaving(true)
+    setContactError('')
+    try {
+      const result = await patchInstaller({
+        trading_name: contactDraft.trading_name || null,
+        contact_name: contactDraft.contact_name,
+        contact_phone: contactDraft.contact_phone || null,
+      })
+      setInstaller(result.installer)
+      setEditingContact(false)
+    } catch (e: unknown) {
+      setContactError(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setContactSaving(false)
+    }
+  }
+
+  function openCoverageEdit() {
+    if (!installer) return
+    setCoverageDraft((installer.coverage_postcodes ?? []).join(', '))
+    setCoverageError('')
+    setEditingCoverage(true)
+  }
+
+  async function saveCoverage() {
+    if (!installer) return
+    setCoverageSaving(true)
+    setCoverageError('')
+    try {
+      const postcodes = coverageDraft
+        .split(',')
+        .map(p => p.trim().toUpperCase())
+        .filter(Boolean)
+      const result = await patchInstaller({ coverage_postcodes: postcodes })
+      setInstaller(result.installer)
+      setEditingCoverage(false)
+    } catch (e: unknown) {
+      setCoverageError(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setCoverageSaving(false)
+    }
+  }
+
+  async function toggleService(serviceProducts: string[]) {
+    if (!installer) return
+    const currentProducts = installer.products ?? []
+    const isActive = currentProducts.some(p => serviceProducts.includes(p))
+    let newProducts: string[]
+    if (isActive) {
+      newProducts = currentProducts.filter(p => !serviceProducts.includes(p))
+    } else {
+      newProducts = [...currentProducts, serviceProducts[0]]
+    }
+    setInstaller({ ...installer, products: newProducts })
+    setServicesSaving(true)
+    try {
+      const result = await patchInstaller({ products: newProducts })
+      setInstaller(result.installer)
+    } catch {
+      // revert
+      setInstaller({ ...installer, products: currentProducts })
+    } finally {
+      setServicesSaving(false)
+    }
+  }
+
   const displayName = installer?.trading_name || installer?.company_name || '—'
   const coverageText = installer
-    ? [
-        ...(installer.coverage_postcodes ?? []).slice(0, 6).join(', '),
-        installer.base_postcode ? `near ${installer.base_postcode}` : '',
-      ].filter(Boolean).join(' · ')
+    ? (installer.coverage_postcodes ?? []).slice(0, 6).join(', ')
     : '—'
 
   const estText = [
@@ -122,21 +232,76 @@ export default function InstallerProfilePage() {
         {!loading && !error && installer && (
           <>
             {/* Business identity */}
-            <div className="flex gap-4 items-center mb-3">
-              <div className="w-16 h-16 rounded-tile border-2 border-dashed border-ws-border bg-[#FAFBFA] flex flex-col items-center justify-center gap-1 cursor-pointer flex-shrink-0">
+            <div className="flex gap-4 items-start mb-3">
+              <div className="w-16 h-16 rounded-tile border-2 border-dashed border-ws-border bg-[#FAFBFA] flex flex-col items-center justify-center gap-1 flex-shrink-0">
                 <span className="text-xl text-ws-subtle">＋</span>
                 <span className="text-xs text-ws-subtle font-semibold">Logo</span>
               </div>
-              <div>
-                <p className="font-display font-extrabold text-xl tracking-tight">{displayName}</p>
-                {estText && <p className="text-xs text-ws-subtle">{estText}</p>}
-                <p className="text-xs text-ws-subtle mt-0.5">{installer.contact_name} · {installer.contact_email}</p>
-                {installer.contact_phone && <p className="text-xs text-ws-subtle">{installer.contact_phone}</p>}
-                <button className="text-xs text-ws-dark-green font-semibold mt-1">＋ Add your logo</button>
+              <div className="flex-1">
+                {!editingContact ? (
+                  <>
+                    <p className="font-display font-extrabold text-xl tracking-tight">{displayName}</p>
+                    {estText && <p className="text-xs text-ws-subtle">{estText}</p>}
+                    <p className="text-xs text-ws-subtle mt-0.5">{installer.contact_name} · {installer.contact_email}</p>
+                    {installer.contact_phone && <p className="text-xs text-ws-subtle">{installer.contact_phone}</p>}
+                    <button
+                      onClick={openContactEdit}
+                      className="text-xs text-ws-dark-green font-semibold mt-1"
+                    >
+                      Edit contact details
+                    </button>
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-ws-muted block mb-0.5">Trading name</label>
+                      <input
+                        className="w-full border border-ws-border rounded-lg px-3 py-1.5 text-sm"
+                        value={contactDraft.trading_name}
+                        onChange={e => setContactDraft(d => ({ ...d, trading_name: e.target.value }))}
+                        placeholder={installer.company_name}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-ws-muted block mb-0.5">Contact name</label>
+                      <input
+                        className="w-full border border-ws-border rounded-lg px-3 py-1.5 text-sm"
+                        value={contactDraft.contact_name}
+                        onChange={e => setContactDraft(d => ({ ...d, contact_name: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-ws-muted block mb-0.5">Contact phone</label>
+                      <input
+                        className="w-full border border-ws-border rounded-lg px-3 py-1.5 text-sm"
+                        value={contactDraft.contact_phone}
+                        onChange={e => setContactDraft(d => ({ ...d, contact_phone: e.target.value }))}
+                        placeholder="07700 000000"
+                      />
+                    </div>
+                    {contactError && <p className="text-xs text-[#C2603F]">{contactError}</p>}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveContact}
+                        disabled={contactSaving}
+                        className="text-xs bg-ws-green text-white font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
+                      >
+                        {contactSaving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => setEditingContact(false)}
+                        className="text-xs text-ws-muted font-semibold px-3 py-1.5"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-[#F2F6F3] rounded-tile px-4 py-3 text-xs text-ws-muted leading-relaxed mb-6">
-              Your logo appears beside your name <strong>once a customer has chosen you</strong> — never during anonymous quoting. PNG or SVG, transparent background works best.
+              Your logo appears beside your name <strong>once a customer has chosen you</strong> — never during anonymous quoting.{' '}
+              <span className="text-ws-dark-green font-semibold">Contact support to upload your logo.</span>
             </div>
 
             {/* Status badge */}
@@ -150,6 +315,7 @@ export default function InstallerProfilePage() {
             {/* Services */}
             <div className="flex justify-between items-center mb-3">
               <p className="eyebrow">Services — accepting quotes</p>
+              {servicesSaving && <span className="text-xs text-ws-muted">Saving…</span>}
             </div>
             <div className="border border-ws-border rounded-tile overflow-hidden mb-2">
               {ALL_SERVICES.map((s, i, arr) => {
@@ -162,7 +328,13 @@ export default function InstallerProfilePage() {
                         {active ? s.sub : '⚠ Locked — certs pending verification'}
                       </p>
                     </div>
-                    <Toggle on={active} locked={!active} />
+                    <ServiceToggle
+                      label={s.label}
+                      sub={s.sub}
+                      active={!!active}
+                      locked={!active}
+                      onToggle={() => toggleService(s.products)}
+                    />
                   </div>
                 )
               })}
@@ -203,18 +375,52 @@ export default function InstallerProfilePage() {
               <p className="text-xs text-ws-muted leading-relaxed mb-4">Your terms for the <strong>install &amp; supply of goods</strong> — the contract between you and the customer.</p>
               <div className="border border-dashed border-ws-border rounded-lg p-4 text-center">
                 <p className="text-xs text-ws-muted">No terms uploaded yet</p>
-                <button className="mt-2 text-xs text-ws-dark-green font-semibold">Upload terms (PDF)</button>
+                <p className="mt-2 text-xs text-ws-dark-green font-semibold">Contact support to upload your terms PDF.</p>
               </div>
             </div>
 
             {/* Coverage */}
             <p className="eyebrow mt-6 mb-3">Coverage</p>
-            <div className="flex gap-3 items-center mb-6">
-              <div className="flex-1 border border-ws-border rounded-tile px-4 py-3 text-sm text-ws-ink">
-                {coverageText || <span className="text-ws-muted">No coverage areas set</span>}
+            {!editingCoverage ? (
+              <div className="flex gap-3 items-center mb-6">
+                <div className="flex-1 border border-ws-border rounded-tile px-4 py-3 text-sm text-ws-ink">
+                  {coverageText || <span className="text-ws-muted">No coverage areas set</span>}
+                </div>
+                <button
+                  onClick={openCoverageEdit}
+                  className="border-2 border-ws-border rounded-btn px-4 py-2.5 font-semibold text-sm text-ws-ink hover:bg-ws-border transition-colors"
+                >
+                  Edit
+                </button>
               </div>
-              <button className="border-2 border-ws-border rounded-btn px-4 py-2.5 font-semibold text-sm text-ws-ink hover:bg-ws-border transition-colors">Edit</button>
-            </div>
+            ) : (
+              <div className="mb-6">
+                <label className="text-xs text-ws-muted block mb-1">Postcodes (comma-separated)</label>
+                <textarea
+                  className="w-full border border-ws-border rounded-tile px-4 py-3 text-sm resize-none"
+                  rows={3}
+                  value={coverageDraft}
+                  onChange={e => setCoverageDraft(e.target.value)}
+                  placeholder="e.g. SW1, EC1, N1, E1"
+                />
+                {coverageError && <p className="text-xs text-[#C2603F] mt-1">{coverageError}</p>}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={saveCoverage}
+                    disabled={coverageSaving}
+                    className="text-xs bg-ws-green text-white font-semibold px-3 py-1.5 rounded-lg disabled:opacity-50"
+                  >
+                    {coverageSaving ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    onClick={() => setEditingCoverage(false)}
+                    className="text-xs text-ws-muted font-semibold px-3 py-1.5"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Balance payment default */}
             <p className="eyebrow mb-1">Balance payment — default</p>

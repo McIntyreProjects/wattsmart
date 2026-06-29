@@ -1,6 +1,62 @@
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+    const admin = await createAdminClient()
+
+    // Resolve installer id
+    let installerId: string | null = null
+    const { data: membership } = await supabase
+      .from('installer_users')
+      .select('installer_id, role')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (membership) {
+      installerId = membership.installer_id
+    } else {
+      const { data: installer } = await supabase
+        .from('installers')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (!installer) return NextResponse.json({ error: 'Installer not found' }, { status: 404 })
+      installerId = installer.id
+    }
+
+    const body = await request.json()
+    const allowed = ['trading_name', 'contact_name', 'contact_phone', 'coverage_postcodes', 'products']
+    const updates: Record<string, unknown> = {}
+    for (const key of allowed) {
+      if (key in body) updates[key] = body[key]
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
+    const { data, error } = await admin
+      .from('installers')
+      .update(updates)
+      .eq('id', installerId)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    return NextResponse.json({ installer: data })
+  } catch (err) {
+    console.error('PATCH /api/installers/me error:', err)
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+  }
+}
+
 export async function GET() {
   try {
     const supabase = await createClient()
