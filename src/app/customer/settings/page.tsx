@@ -1,20 +1,35 @@
-'use client'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { useState } from 'react'
 
-function Toggle({ on }: { on: boolean }) {
-  const [value, setValue] = useState(on)
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <button
-      onClick={() => setValue(!value)}
-      className={`w-11 h-6 rounded-full flex items-center px-0.5 flex-shrink-0 transition-colors ${value ? 'bg-ws-green' : 'bg-[#D9E1DC]'}`}
-    >
-      <span className={`w-5 h-5 rounded-full bg-white transition-transform ${value ? 'translate-x-5' : ''}`} />
-    </button>
+    <div className="flex justify-between items-center px-4 py-3.5">
+      <div>
+        <p className="text-xs text-ws-subtle">{label}</p>
+        <p className="font-semibold text-sm mt-0.5">{value}</p>
+      </div>
+    </div>
   )
 }
 
-export default function CustomerSettingsPage() {
+export default async function CustomerSettingsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login?type=customer')
+
+  const { data: customer } = await supabase
+    .from('customers')
+    .select('first_name, last_name, phone')
+    .eq('user_id', user.id)
+    .single()
+
+  const fullName = customer
+    ? [customer.first_name, customer.last_name].filter(Boolean).join(' ')
+    : '—'
+  const phone = customer?.phone ?? '—'
+  const email = user.email ?? '—'
+
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -26,45 +41,10 @@ export default function CustomerSettingsPage() {
 
         {/* Your details */}
         <p className="eyebrow mb-3">Your details</p>
-        <div className="border border-ws-border rounded-tile overflow-hidden mb-6">
-          {[
-            { label: 'Name', value: 'Sarah Mills' },
-            { label: 'Email', value: 'sarah.mills@email.co.uk' },
-            { label: 'Mobile', value: '07700 900 412' },
-            { label: 'Password', value: '••••••••', action: 'Change' },
-          ].map((row, i, arr) => (
-            <div
-              key={row.label}
-              className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}
-            >
-              <div>
-                <p className="text-xs text-ws-subtle">{row.label}</p>
-                <p className="font-semibold text-sm mt-0.5">{row.value}</p>
-              </div>
-              <button className="text-xs text-ws-dark-green font-semibold">{row.action ?? 'Edit'}</button>
-            </div>
-          ))}
-        </div>
-
-        {/* Notifications */}
-        <p className="eyebrow mb-3">Notifications</p>
-        <div className="border border-ws-border rounded-tile overflow-hidden mb-6">
-          {[
-            { title: 'Quote & job updates', sub: 'Email · the important stuff', on: true },
-            { title: 'SMS reminders', sub: 'Survey & payment dates', on: true },
-            { title: 'Tips & offers', sub: 'Occasional, never spammy', on: false },
-          ].map((row, i, arr) => (
-            <div
-              key={row.title}
-              className={`flex justify-between items-center px-4 py-3.5 ${i < arr.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}
-            >
-              <div>
-                <p className="font-semibold text-sm">{row.title}</p>
-                <p className="text-xs text-ws-subtle mt-0.5">{row.sub}</p>
-              </div>
-              <Toggle on={row.on} />
-            </div>
-          ))}
+        <div className="border border-ws-border rounded-tile overflow-hidden mb-6 divide-y divide-[#EDF1EE]">
+          <Row label="Name" value={fullName} />
+          <Row label="Email" value={email} />
+          <Row label="Mobile" value={phone} />
         </div>
 
         {/* Privacy & data */}
@@ -84,9 +64,14 @@ export default function CustomerSettingsPage() {
         </div>
 
         {/* Log out */}
-        <button className="w-full border border-ws-border rounded-tile py-3.5 font-semibold text-sm text-[#3D463F] hover:bg-ws-border transition-colors">
-          Log out
-        </button>
+        <form action="/auth/signout" method="POST">
+          <button
+            type="submit"
+            className="w-full border border-ws-border rounded-tile py-3.5 font-semibold text-sm text-[#3D463F] hover:bg-ws-border transition-colors"
+          >
+            Log out
+          </button>
+        </form>
       </div>
     </div>
   )
