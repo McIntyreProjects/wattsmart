@@ -108,32 +108,39 @@ export default function InstallerOnboardingPage() {
             <h1 className="font-display font-extrabold text-3xl tracking-tight mb-1">Just your MCS number.</h1>
             <p className="text-sm text-ws-muted mb-7 leading-relaxed">Enter one ID — we pull your RECC, NICEIC, insurance and Companies House record from it, then check every register live.</p>
             <div className="max-w-md">
-              <label className="block text-xs font-semibold text-ws-muted mb-1.5">MCS membership no.</label>
-              <div className="border border-ws-border rounded-btn px-4 py-3 flex justify-between items-center bg-white">
-                <span className="font-mono text-sm">NAP-1100-2284</span>
-                <span className="text-xs text-ws-muted font-semibold">submitted</span>
-              </div>
-              <p className="text-xs text-ws-muted mt-2 leading-relaxed">↳ Enter your MCS number and any other cert numbers below. Our team will check these manually — usually within 1 working day.</p>
-              <div className="flex flex-col gap-2.5 mt-6">
+              <p className="text-xs text-ws-muted mb-5 leading-relaxed">Enter your certification numbers below and optionally upload a copy of each certificate. Our team will check these manually — usually within 1 working day.</p>
+              <div className="flex flex-col gap-3">
                 {[
-                  { label: 'MCS', sub: 'Microgeneration Certification', status: 'pending review' },
-                  { label: 'RECC', sub: 'Renewable Energy Consumer Code', status: 'pending review' },
-                  { label: 'NICEIC', sub: 'electrical competence', status: 'pending review' },
-                  { label: 'OZEV', sub: 'EV charge-point grant approval', status: 'pending review' },
-                  { label: 'TrustMark', sub: 'government-endorsed quality', status: 'pending review' },
+                  { id: 'mcs', label: 'MCS', sub: 'Microgeneration Certification', placeholder: 'e.g. NAP-1100-2284' },
+                  { id: 'recc', label: 'RECC', sub: 'Renewable Energy Consumer Code', placeholder: 'e.g. RECC-00821' },
+                  { id: 'niceic', label: 'NICEIC', sub: 'Electrical competence', placeholder: 'e.g. NICEIC-12345' },
+                  { id: 'ozev', label: 'OZEV', sub: 'EV charge-point grant approval', placeholder: 'e.g. OZEV-67890' },
+                  { id: 'trustmark', label: 'TrustMark', sub: 'Government-endorsed quality', placeholder: 'e.g. TM-112233' },
                 ].map((r) => (
-                  <div key={r.label} className="flex items-center gap-3 border border-ws-border rounded-tile px-4 py-3 bg-white">
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 border-2 border-amber-400 text-amber-500">◐</span>
-                    <div className="flex-1">
-                      <span className="font-bold text-sm">{r.label}</span>
-                      <span className="text-xs text-ws-muted ml-2">· {r.sub}</span>
+                  <div key={r.id} className="border border-ws-border rounded-tile px-4 py-3.5 bg-white">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div>
+                        <span className="font-bold text-sm">{r.label}</span>
+                        <span className="text-xs text-ws-muted ml-2">· {r.sub}</span>
+                      </div>
+                      <span className="text-xs text-ws-muted italic">optional</span>
                     </div>
-                    <span className="font-mono text-xs whitespace-nowrap text-amber-600">{r.status}</span>
+                    <input
+                      type="text"
+                      placeholder={r.placeholder}
+                      className="w-full border border-ws-border rounded-btn px-3 py-2 text-sm font-mono placeholder:text-ws-subtle focus:outline-none focus:border-ws-green mb-2.5"
+                    />
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className="border border-dashed border-ws-border rounded-btn px-3 py-1.5 text-xs text-ws-muted group-hover:border-ws-green group-hover:text-ws-dark-green transition-colors flex items-center gap-1.5">
+                        <span>↑</span> Upload certificate (PDF or image)
+                      </div>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" />
+                    </label>
                   </div>
                 ))}
               </div>
               <div className="mt-4 bg-[#F2F6F3] rounded-tile px-4 py-3 text-xs text-ws-muted leading-relaxed">
-                Our team will verify each certificate manually and notify you by email once your account is approved. You can still complete your onboarding in the meantime.
+                Only fill in the certifications that apply to you. Our team will verify each one and notify you by email once your account is approved.
               </div>
             </div>
           </>
