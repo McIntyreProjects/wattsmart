@@ -3,6 +3,8 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendFeeInvoice } from '@/lib/email'
 import { formatCurrency } from '@/lib/utils'
 
+const MIN_FEE_PENCE = 7500 // £75 floor
+
 export async function POST(req: NextRequest) {
   try {
     const { enquiryId, finalAmount } = await req.json()
@@ -22,7 +24,23 @@ export async function POST(req: NextRequest) {
     if (!installer) return NextResponse.json({ error: 'Installer not found' }, { status: 404 })
 
     const amountPence = Math.round(parseFloat(finalAmount) * 100)
-    const fee = Math.round(amountPence * 0.05)
+
+    // Look up the deposit payment already collected for this enquiry
+    const { data: depositPayment } = await admin
+      .from('payments')
+      .select('amount, wattsmart_fee')
+      .eq('enquiry_id', enquiryId)
+      .eq('type', 'deposit')
+      .in('status', ['held', 'confirmed', 'released', 'pending'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    const depositFeePence = depositPayment?.wattsmart_fee ?? 0
+
+    // Correct fee formula: max(5% of final amount, £75 floor), minus deposit fee already collected
+    const totalFeePence = Math.max(Math.round(amountPence * 0.05), MIN_FEE_PENCE)
+    const invoiceAmountPence = Math.max(totalFeePence - depositFeePence, 0)
 
     const { data: payment } = await admin
       .from('payments')
@@ -31,22 +49,22 @@ export async function POST(req: NextRequest) {
         installer_id: installer.id,
         type: 'final',
         amount: amountPence,
-        wattsmart_fee: fee,
-        installer_amount: amountPence - fee,
+        wattsmart_fee: totalFeePence,
+        installer_amount: amountPence - totalFeePence,
         status: 'held',
         paid_at: new Date().toISOString(),
       })
       .select()
       .single()
 
-    // Create fee invoice (due in 30 days)
+    // Create fee invoice for the remaining amount due (total fee minus deposit fee collected)
     const dueAt = new Date(Date.now() + 30 * 86400000).toISOString()
     const { data: invoice } = await admin
       .from('fee_invoices')
       .insert({
         payment_id: payment.id,
         installer_id: installer.id,
-        amount: fee,
+        amount: invoiceAmountPence,
         status: 'issued',
         due_at: dueAt,
       })
@@ -62,9 +80,15 @@ export async function POST(req: NextRequest) {
     await sendFeeInvoice(
       installer.contact_email,
       enquiry?.reference || '',
-      formatCurrency(fee),
+      formatCurrency(invoiceAmountPence),
       new Date(dueAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
-      `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/installer/invoices/${invoice.id}`
+      `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/installer/invoices/${invoice.id}`,
+      {
+        totalInstallFee: formatCurrency(amountPence),
+        wattsmartTotalFee: formatCurrency(totalFeePence),
+        depositFeeCollected: formatCurrency(depositFeePence),
+        amountNowDue: formatCurrency(invoiceAmountPence),
+      }
     ).catch(console.error)
 
     return NextResponse.json({ invoiceId: invoice.id })

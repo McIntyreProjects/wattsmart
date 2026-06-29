@@ -146,14 +146,50 @@ export async function sendDepositReleased(to: string, ref: string, amount: strin
   )
 }
 
-export async function sendFeeInvoice(to: string, ref: string, amount: string, dueDate: string, invoiceUrl: string) {
+export async function sendFeeInvoice(
+  to: string,
+  ref: string,
+  amount: string,
+  dueDate: string,
+  invoiceUrl: string,
+  breakdown?: {
+    totalInstallFee: string
+    wattsmartTotalFee: string
+    depositFeeCollected: string
+    amountNowDue: string
+  }
+) {
+  const breakdownHtml = breakdown
+    ? `
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #E5E5E5;border-radius:8px;overflow:hidden;">
+      <tr style="background:#F7F4EF;">
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#6B7E74;">Total installation value</td>
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#1A1A1A;text-align:right;">${breakdown.totalInstallFee}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#6B7E74;">WattSmart referral fee (5%)</td>
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#1A1A1A;text-align:right;">${breakdown.wattsmartTotalFee}</td>
+      </tr>
+      <tr style="background:#F7F4EF;">
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#6B7E74;">Deposit fee already collected</td>
+        <td style="padding:10px 16px;font-family:Inter,Arial,sans-serif;font-size:13px;color:#1A1A1A;text-align:right;">−${breakdown.depositFeeCollected}</td>
+      </tr>
+      <tr style="border-top:2px solid #1B3A2D;">
+        <td style="padding:12px 16px;font-family:Inter,Arial,sans-serif;font-size:14px;font-weight:600;color:#1B3A2D;">Amount now due</td>
+        <td style="padding:12px 16px;font-family:Inter,Arial,sans-serif;font-size:14px;font-weight:600;color:#1B3A2D;text-align:right;">${breakdown.amountNowDue}</td>
+      </tr>
+    </table>
+    `
+    : `<p>Amount due: <strong>${amount}</strong></p>`
+
   await send(
     to,
     `WattSmart referral fee invoice — Job #${ref}`,
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Referral fee invoice.</h2>
     <p>A referral fee invoice has been generated for job <strong>${ref}</strong>.</p>
-    <p>Amount due: <strong>${amount}</strong><br/>Due date: <strong>${dueDate}</strong></p>
+    ${breakdownHtml}
+    <p>Due date: <strong>${dueDate}</strong></p>
     <p style="margin:24px 0;">
       <a href="${invoiceUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View invoice →</a>
     </p>
