@@ -48,11 +48,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create installer record
+    // Create installer record — if this or anything after fails, roll back the auth user
+    const userId = authData.user.id
+    const rollback = async () => {
+      await supabase.auth.admin.deleteUser(userId).catch(console.error)
+    }
+
     const { data: installer, error: instError } = await supabase
       .from('installers')
       .insert({
-        user_id: authData.user.id,
+        user_id: userId,
         company_name: companyName,
         trading_name: tradingName || null,
         companies_house_number: companiesHouseNumber || null,
@@ -67,13 +72,17 @@ export async function POST(req: NextRequest) {
           .filter(Boolean),
         base_lat,
         base_lng,
+        base_postcode: basePostcode ? basePostcode.trim().toUpperCase() : null,
         status: 'pending',
         trustpilot_url: trustpilotUrl || null,
       })
       .select()
       .single()
 
-    if (instError) throw instError
+    if (instError) {
+      await rollback()
+      throw instError
+    }
 
     // Store certifications
     const certRows = Object.entries(certifications as Record<string, { number: string; status: string }>)
@@ -86,10 +95,14 @@ export async function POST(req: NextRequest) {
       }))
 
     if (certRows.length > 0) {
-      await supabase.from('certifications').insert(certRows)
+      const { error: certError } = await supabase.from('certifications').insert(certRows)
+      if (certError) {
+        await rollback()
+        throw certError
+      }
     }
 
-    // Notify admin
+    // Notify admin (non-fatal — don't roll back if email fails)
     const adminEmail = process.env.ADMIN_EMAIL
     if (adminEmail) {
       await sendNewInstallerApplication(
