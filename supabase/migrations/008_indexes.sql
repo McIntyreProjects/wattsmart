@@ -47,9 +47,9 @@ create index if not exists idx_quotes_status
 -- ─────────────────────────────────────────────
 -- PAYMENTS
 -- ─────────────────────────────────────────────
--- FK lookup — payment released/refunded → job/enquiry chain
-create index if not exists idx_payments_job_id
-  on payments (job_id);
+-- FK lookup — payment released/refunded → enquiry chain
+create index if not exists idx_payments_enquiry_id
+  on payments (enquiry_id);
 
 -- Status filter — pending/held/released/refunded admin views
 create index if not exists idx_payments_status
