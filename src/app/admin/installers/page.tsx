@@ -42,24 +42,29 @@ export default function AdminInstallersPage() {
 
           <div className="flex flex-col gap-2 mb-4">
             {[
-              { label: 'MCS', value: '✓ verified', ok: true },
-              { label: 'RECC', value: '✓ verified', ok: true },
-              { label: 'Companies House', value: '✓ active · 9 yrs', ok: true },
-              { label: 'Public-liability insurance', value: '⚠ expires 24 Jun', ok: false },
+              { label: 'MCS', value: 'NAP-1100-2284', status: 'pending', ok: false },
+              { label: 'RECC', value: 'RECC-00821', status: 'pending', ok: false },
+              { label: 'Companies House', value: '08842210', status: 'pending', ok: false },
+              { label: 'Public liability insurance', value: '⚠ expires 24 Jun', status: 'expiring', ok: false },
             ].map((r) => (
-              <div key={r.label} className="flex justify-between text-sm">
+              <div key={r.label} className="flex justify-between items-center text-sm">
                 <span>{r.label}</span>
-                <span className={`font-mono ${r.ok ? 'text-ws-dark-green' : 'text-amber-700'}`}>{r.value}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-ws-muted">{r.value}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-pill font-semibold ${
+                    r.status === 'expiring' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-[#F2F6F3] text-ws-muted border border-ws-border'
+                  }`}>{r.status === 'expiring' ? '⚠ expiring' : 'needs check'}</span>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="bg-[#F2F6F3] rounded-lg px-4 py-3 text-xs text-ws-muted leading-relaxed mb-4">
-            Your rule: flag when public-liability insurance is within 14 days of expiry. Everything else passed automatically.
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-700 leading-relaxed mb-4">
+            Certificates need manual verification. Click "Verify certs" to check each number on the relevant register before approving.
           </div>
 
           <div className="flex gap-3">
-            <button className="flex-1 bg-ws-green text-white rounded-btn py-3 font-bold text-sm hover:bg-ws-dark-green transition-colors">Approve</button>
+            <a href="/admin/installers/greenfield/verify-certs" className="flex-1 bg-ws-green text-white rounded-btn py-3 font-bold text-sm hover:bg-ws-dark-green transition-colors text-center">Verify certs</a>
             <button className="border-2 border-ws-border rounded-btn px-5 py-3 font-semibold text-sm text-ws-ink hover:bg-ws-border transition-colors">Decline</button>
           </div>
         </div>

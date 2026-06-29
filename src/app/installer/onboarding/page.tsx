@@ -109,43 +109,31 @@ export default function InstallerOnboardingPage() {
             <p className="text-sm text-ws-muted mb-7 leading-relaxed">Enter one ID — we pull your RECC, NICEIC, insurance and Companies House record from it, then check every register live.</p>
             <div className="max-w-md">
               <label className="block text-xs font-semibold text-ws-muted mb-1.5">MCS membership no.</label>
-              <div className="border-2 border-ws-green rounded-btn px-4 py-3 flex justify-between items-center">
+              <div className="border border-ws-border rounded-btn px-4 py-3 flex justify-between items-center bg-white">
                 <span className="font-mono text-sm">NAP-1100-2284</span>
-                <span className="text-xs text-ws-green font-semibold">✓ found</span>
+                <span className="text-xs text-ws-muted font-semibold">submitted</span>
               </div>
-              <p className="text-xs text-ws-muted mt-2 leading-relaxed">↳ From this we auto-found your company reg (08842210), RECC &amp; £2m insurance.</p>
-              <button className="w-full bg-ws-green text-white rounded-btn py-3 font-bold text-sm mt-5 hover:bg-ws-dark-green transition-colors">
-                Run verification
-              </button>
+              <p className="text-xs text-ws-muted mt-2 leading-relaxed">↳ Enter your MCS number and any other cert numbers below. Our team will check these manually — usually within 1 working day.</p>
               <div className="flex flex-col gap-2.5 mt-6">
                 {[
-                  { label: 'MCS', sub: 'Microgeneration Certification', status: 'verified · exp 04/27', ok: true },
-                  { label: 'RECC', sub: 'Renewable Energy Consumer Code', status: 'verified · exp 09/26', ok: true },
-                  { label: 'NICEIC', sub: 'electrical competence', status: 'verified · exp 01/27', ok: true },
-                  { label: 'OZEV', sub: 'EV charge-point grant approval', status: 'verified · exp 11/26', ok: true },
-                  { label: 'TrustMark', sub: 'government-endorsed quality', status: 'checking…', pending: true },
-                  { label: 'NAPIT', sub: 'lapsed 02/26', status: 'action needed', error: true },
+                  { label: 'MCS', sub: 'Microgeneration Certification', status: 'pending review' },
+                  { label: 'RECC', sub: 'Renewable Energy Consumer Code', status: 'pending review' },
+                  { label: 'NICEIC', sub: 'electrical competence', status: 'pending review' },
+                  { label: 'OZEV', sub: 'EV charge-point grant approval', status: 'pending review' },
+                  { label: 'TrustMark', sub: 'government-endorsed quality', status: 'pending review' },
                 ].map((r) => (
-                  <div key={r.label} className={`flex items-center gap-3 border rounded-tile px-4 py-3 ${
-                    r.ok ? 'border-[#CDE6D7] bg-[#F1FAF5]' :
-                    r.error ? 'border-[#ECC9BE] bg-[#FBEFEA]' :
-                    'border-ws-border'
-                  }`}>
-                    <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
-                      r.ok ? 'bg-ws-green text-white' :
-                      r.error ? 'bg-[#C2603F] text-white' :
-                      'border-2 border-amber-400 text-amber-500'
-                    }`}>{r.ok ? '✓' : r.error ? '!' : '◐'}</span>
+                  <div key={r.label} className="flex items-center gap-3 border border-ws-border rounded-tile px-4 py-3 bg-white">
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0 border-2 border-amber-400 text-amber-500">◐</span>
                     <div className="flex-1">
                       <span className="font-bold text-sm">{r.label}</span>
                       <span className="text-xs text-ws-muted ml-2">· {r.sub}</span>
-                      {r.error && <p className="text-xs text-[#C2603F] mt-0.5">Renew to offer heat pumps. Other products stay active.</p>}
                     </div>
-                    <span className={`font-mono text-xs whitespace-nowrap ${r.ok ? 'text-ws-dark-green' : r.error ? 'text-[#C2603F]' : 'text-amber-500'}`}>
-                      {r.status}
-                    </span>
+                    <span className="font-mono text-xs whitespace-nowrap text-amber-600">{r.status}</span>
                   </div>
                 ))}
+              </div>
+              <div className="mt-4 bg-[#F2F6F3] rounded-tile px-4 py-3 text-xs text-ws-muted leading-relaxed">
+                Our team will verify each certificate manually and notify you by email once your account is approved. You can still complete your onboarding in the meantime.
               </div>
             </div>
           </>

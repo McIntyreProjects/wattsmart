@@ -26,7 +26,11 @@
       "Bash(awk '/create table if not exists enquiries/,/^;/' /Users/stevenmcintyre/Documents/WattSmart/supabase/migrations/001_initial_schema.sql)",
       "Bash(xargs cat)",
       "Bash(python3 -c ' *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(mkdir -p /Users/stevenmcintyre/Documents/WattSmart/src/app/admin/installers/\\\\[installerId\\\\]/verify-certs)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
