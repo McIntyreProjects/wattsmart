@@ -2,31 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/Button'
-import { Stars } from '@/components/ui/Stars'
 
-const SERVICE_REVIEWS = [
-  {
-    stars: 5,
-    source: 'Google',
-    text: 'Three solid quotes in two days and not one pushy phone call. Genuinely easy.',
-    name: 'Priya',
-    location: 'Leeds',
-  },
-  {
-    stars: 5,
-    source: 'Trustpilot',
-    text: "I felt in control the whole way. Comparing without the sales pressure was brilliant.",
-    name: 'Mark',
-    location: 'Durham',
-  },
-  {
-    stars: 5,
-    source: 'Google',
-    text: 'WattSmart holding the deposit made me feel safe paying someone new.',
-    name: 'Abi',
-    location: 'York',
-  },
-]
 
 const PRODUCTS = [
   { id: 'solar',    label: 'Solar panels',    sub: 'Make your own power' },
@@ -146,25 +122,21 @@ export default function HomePage() {
 
         {/* Reviews of WattSmart service */}
         <section className="py-10 border-t border-ws-border">
-          <p className="text-sm text-ws-muted mb-1">What homeowners say about us</p>
-          <div className="flex items-center gap-4 mb-1">
-            <span className="font-semibold text-ws-ink text-sm">Google 4.9</span>
-            <span className="font-semibold text-ws-ink text-sm">Trustpilot 4.7</span>
-          </div>
-          <p className="text-xs text-ws-muted mb-6">
-            Reviews of the WattSmart service — your installer&apos;s own reviews come later, anonymised.
-          </p>
-          <div className="space-y-3">
-            {SERVICE_REVIEWS.map((r, i) => (
-              <div key={i} className="bg-ws-card rounded-card border border-ws-border p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Stars rating={r.stars} size={13} />
-                  <span className="text-xs text-ws-muted">{r.source}</span>
-                </div>
-                <p className="text-sm text-ws-body leading-relaxed">&ldquo;{r.text}&rdquo;</p>
-                <p className="text-xs text-ws-muted mt-2">{r.name} · {r.location}</p>
-              </div>
-            ))}
+          <p className="text-sm text-ws-muted mb-4">What homeowners say about us</p>
+          <div className="bg-ws-card rounded-card border border-ws-border p-6 text-center">
+            <p className="text-2xl mb-3">⭐</p>
+            <p className="font-semibold text-ws-ink text-sm mb-1">We&apos;re new — no reviews yet</p>
+            <p className="text-xs text-ws-muted leading-relaxed max-w-xs mx-auto">
+              If you use WattSmart, we&apos;d love to hear what you think. Reviews on Google or Trustpilot help other homeowners find us.
+            </p>
+            <div className="flex justify-center gap-3 mt-4">
+              <a href="https://g.page/r/review" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-ws-dark-green border border-ws-border rounded-btn px-3 py-1.5 hover:bg-ws-border transition-colors">
+                Leave a Google review
+              </a>
+              <a href="https://trustpilot.com/review/wattsmart.co.uk" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-ws-dark-green border border-ws-border rounded-btn px-3 py-1.5 hover:bg-ws-border transition-colors">
+                Leave a Trustpilot review
+              </a>
+            </div>
           </div>
         </section>
 
