@@ -1,8 +1,40 @@
+'use client'
 import Link from 'next/link'
-
-export const metadata = { title: 'Contact us — WattSmart' }
+import { useState } from 'react'
 
 export default function ContactPage() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const data = Object.fromEntries(new FormData(form))
+
+    setStatus('sending')
+    setErrorMsg('')
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          subject: data.category || undefined,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to send')
+      setStatus('success')
+      form.reset()
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong')
+      setStatus('error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       {/* Nav */}
@@ -27,60 +59,86 @@ export default function ContactPage() {
         <div className="flex gap-8 flex-wrap">
           {/* Form */}
           <div className="flex-[1.3] min-w-[300px]">
-            <form className="flex flex-col gap-4 max-w-md" action="/api/contact" method="POST">
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-ws-muted mb-1.5">Your name</label>
-                  <input
-                    name="name"
-                    type="text"
-                    placeholder="Sarah Mills"
-                    className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-ws-muted mb-1.5">Email</label>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="sarah@example.com"
-                    className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-ws-muted mb-1.5">What's it about?</label>
-                <select
-                  name="category"
-                  className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink bg-white focus:outline-none focus:border-ws-green appearance-none"
+            {status === 'success' ? (
+              <div className="max-w-md bg-[#F2F6F3] border border-ws-border rounded-card p-6">
+                <p className="font-semibold text-ws-ink mb-1">Message sent</p>
+                <p className="text-sm text-ws-muted leading-relaxed">
+                  Thanks — we'll reply within one working day to{' '}
+                  <span className="font-medium text-ws-ink">your email</span>.
+                </p>
+                <button
+                  onClick={() => setStatus('idle')}
+                  className="mt-4 text-sm font-semibold text-ws-dark-green"
                 >
-                  <option value="">Select a category</option>
-                  <option>My enquiry or quotes</option>
-                  <option>My deposit or payment</option>
-                  <option>My account</option>
-                  <option>Installer support</option>
-                  <option>Something else</option>
-                </select>
+                  Send another message
+                </button>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold text-ws-muted mb-1.5">Your name</label>
+                    <input
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="Sarah Mills"
+                      className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-semibold text-ws-muted mb-1.5">Email</label>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      placeholder="sarah@example.com"
+                      className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green"
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-ws-muted mb-1.5">Message</label>
-                <textarea
-                  name="message"
-                  rows={5}
-                  placeholder="How can we help?"
-                  className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green resize-none"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-semibold text-ws-muted mb-1.5">What's it about?</label>
+                  <select
+                    name="category"
+                    className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink bg-white focus:outline-none focus:border-ws-green appearance-none"
+                  >
+                    <option value="">Select a category</option>
+                    <option>My enquiry or quotes</option>
+                    <option>My deposit or payment</option>
+                    <option>My account</option>
+                    <option>Installer support</option>
+                    <option>Something else</option>
+                  </select>
+                </div>
 
-              <button
-                type="submit"
-                className="bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-dark-green transition-colors"
-              >
-                Send message
-              </button>
-            </form>
+                <div>
+                  <label className="block text-xs font-semibold text-ws-muted mb-1.5">Message</label>
+                  <textarea
+                    name="message"
+                    required
+                    rows={5}
+                    placeholder="How can we help?"
+                    className="w-full border border-ws-border rounded-btn px-3 py-3 text-sm text-ws-ink placeholder:text-ws-subtle focus:outline-none focus:border-ws-green resize-none"
+                  />
+                </div>
+
+                {status === 'error' && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    {errorMsg}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={status === 'sending'}
+                  className="bg-ws-green text-white rounded-btn py-3.5 font-bold text-sm hover:bg-ws-dark-green transition-colors disabled:opacity-60"
+                >
+                  {status === 'sending' ? 'Sending…' : 'Send message'}
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Sidebar */}

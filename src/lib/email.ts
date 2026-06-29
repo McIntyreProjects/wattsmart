@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
-  tls: { ciphers: 'SSLv3' },
+  tls: { rejectUnauthorized: false },
 })
 
 const brand = `

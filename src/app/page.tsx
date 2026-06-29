@@ -3,6 +3,11 @@ import Image from 'next/image'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/Button'
 
+export const metadata = {
+  title: 'WattSmart — Solar panels, battery storage & heat pump quotes',
+  description: 'Get free quotes from up to 3 certified local installers. No cold calls, no obligation.',
+}
+
 
 const PRODUCTS = [
   { id: 'solar',    label: 'Solar panels',    sub: 'Make your own power' },
@@ -54,7 +59,7 @@ export default function HomePage() {
           <p className="text-sm text-ws-muted mt-3">Free, no obligation · about 3 minutes</p>
 
           {/* Trust bar */}
-          <div className="grid grid-cols-3 gap-3 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10">
             {[
               { label: 'Certified', sub: 'every installer' },
               { label: 'Free to use', sub: 'getting quotes costs nothing' },
@@ -69,7 +74,7 @@ export default function HomePage() {
         </section>
 
         {/* How it works */}
-        <section className="py-10 border-t border-ws-border">
+        <section id="how-it-works" className="py-10 border-t border-ws-border">
           <h2
             className="text-2xl font-bold text-ws-ink mb-6"
             style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
@@ -130,7 +135,8 @@ export default function HomePage() {
               If you use WattSmart, we&apos;d love to hear what you think. Reviews on Google or Trustpilot help other homeowners find us.
             </p>
             <div className="flex justify-center gap-3 mt-4">
-              <a href="https://g.page/r/review" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-ws-dark-green border border-ws-border rounded-btn px-3 py-1.5 hover:bg-ws-border transition-colors">
+              {/* TODO: replace with real Google Place review URL once GMB is set up */}
+              <a href="https://www.google.com/search?q=WattSmart+solar+installers" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-ws-dark-green border border-ws-border rounded-btn px-3 py-1.5 hover:bg-ws-border transition-colors">
                 Leave a Google review
               </a>
               <a href="https://trustpilot.com/review/wattsmart.co.uk" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-ws-dark-green border border-ws-border rounded-btn px-3 py-1.5 hover:bg-ws-border transition-colors">
@@ -162,7 +168,7 @@ export default function HomePage() {
         <div className="max-w-content mx-auto px-5 flex flex-wrap items-center justify-between gap-4 text-sm text-ws-muted">
           <Logo />
           <nav className="flex flex-wrap gap-4">
-            <span>How it works</span>
+            <Link href="/#how-it-works" className="hover:text-ws-body transition-colors">How it works</Link>
             <Link href="/contact"       className="hover:text-ws-body transition-colors">Contact us</Link>
             <Link href="/privacy"       className="hover:text-ws-body transition-colors">Privacy policy</Link>
             <Link href="/terms"         className="hover:text-ws-body transition-colors">Terms & conditions</Link>

@@ -42,10 +42,6 @@ export default function TermsPage() {
         <h1 className="font-display font-extrabold text-4xl tracking-tight">Terms &amp; conditions</h1>
         <p className="text-xs text-ws-subtle mt-1.5">Last updated June 2026 · plain-English summary</p>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-card px-4 py-3 mt-5 text-xs text-amber-700 leading-relaxed">
-          ⚠ Draft content for design — to be reviewed by a solicitor before launch.
-        </div>
-
         <div className="flex flex-col gap-6 mt-8">
           {sections.map((s) => (
             <div key={s.title}>

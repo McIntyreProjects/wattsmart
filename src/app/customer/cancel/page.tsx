@@ -23,14 +23,26 @@ function CancelPageInner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Derive cooling-off status from paidAt param (ISO string)
-  const paidAtParam = searchParams.get('paidAt')
+  // Fetch the real paidAt from the server — do NOT trust the URL param (tamperable).
+  const [paidAt, setPaidAt] = useState<Date | null>(null)
+  const [paidAtLoading, setPaidAtLoading] = useState(true)
+
+  useEffect(() => {
+    if (!paymentId) { setPaidAtLoading(false); return }
+    fetch(`/api/payments/paid-at?paymentId=${encodeURIComponent(paymentId)}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.paidAt) setPaidAt(new Date(json.paidAt))
+      })
+      .catch(() => { /* leave paidAt null — defaults to full refund */ })
+      .finally(() => setPaidAtLoading(false))
+  }, [paymentId])
+
   const depositParam = searchParams.get('deposit')
   const depositAmount = depositParam ? parseFloat(depositParam) : 250
-  const paidAt = paidAtParam ? new Date(paidAtParam) : null
   const withinCoolingOff = paidAt
     ? (Date.now() - paidAt.getTime()) < 14 * 24 * 60 * 60 * 1000
-    : true // default to full refund if unknown
+    : true // default to full refund if unknown or still loading
 
   const wattsmart5pct = Math.round(depositAmount * 0.05 * 100) / 100
   const refundAmount = withinCoolingOff ? depositAmount : depositAmount - wattsmart5pct
@@ -66,6 +78,14 @@ function CancelPageInner() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (paidAtLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#E7EAE7' }}>
+        <p className="text-sm text-ws-muted">Loading…</p>
+      </div>
+    )
   }
 
   return (
