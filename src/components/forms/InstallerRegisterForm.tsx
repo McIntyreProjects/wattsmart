@@ -29,6 +29,7 @@ type FormData = {
   yearsTrading: string
   products: string[]
   certifications: Record<string, CertEntry>
+  basePostcode: string
   coveragePostcodes: string
   googleBusinessName: string
   trustpilotUrl: string
@@ -140,7 +141,7 @@ export function InstallerRegisterForm() {
   const [data, setData] = useState<FormData>({
     companyName: '', tradingName: '', companiesHouseNumber: '', contactName: '', contactEmail: '',
     contactPhone: '', yearsTrading: '', products: [], certifications: {},
-    coveragePostcodes: '', googleBusinessName: '', trustpilotUrl: '',
+    basePostcode: '', coveragePostcodes: '', googleBusinessName: '', trustpilotUrl: '',
     password: '', passwordConfirm: '',
   })
   const [loading, setLoading] = useState(false)
@@ -207,7 +208,7 @@ const canProceed = () => {
           Application submitted.
         </h1>
         <p className="text-sm text-ws-muted leading-relaxed">
-          We&apos;ll review your certifications and send you a decision by email — usually within 48 hours.
+          We&apos;ll review your certifications and be in touch by email once your account is approved.
         </p>
       </div>
     )
@@ -253,6 +254,10 @@ const canProceed = () => {
           <FieldInput label="Your name" value={data.contactName} onChange={v => set('contactName', v)} />
           <FieldInput label="Email address" type="email" value={data.contactEmail} onChange={v => set('contactEmail', v)} />
           <FieldInput label="Phone number" type="tel" value={data.contactPhone} onChange={v => set('contactPhone', v)} />
+          <div>
+            <FieldInput label="Base postcode" value={data.basePostcode} onChange={v => set('basePostcode', v)} placeholder="e.g. DH1 3JZ" />
+            <p className="text-xs text-ws-muted mt-1.5">Your business base — used to match you with nearby customers.</p>
+          </div>
           <FieldInput label="Years trading" type="number" value={data.yearsTrading} onChange={v => set('yearsTrading', v)} />
         </div>
       )}

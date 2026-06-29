@@ -6,9 +6,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      companyName, companiesHouseNumber, contactName, contactEmail, contactPhone,
+      companyName, tradingName, companiesHouseNumber, contactName, contactEmail, contactPhone,
       yearsTrading, products, coveragePostcodes, certifications,
-      googleBusinessName, trustpilotUrl, password,
+      googleBusinessName, trustpilotUrl, password, basePostcode,
     } = body
 
     if (!companyName || !contactName || !contactEmail || !contactPhone || !products?.length || !certifications || !password) {
@@ -32,12 +32,29 @@ export async function POST(req: NextRequest) {
       throw authError
     }
 
+    // Resolve base postcode to lat/lng using postcodes.io (free, UK-specific, no key needed)
+    let base_lat: number | null = null
+    let base_lng: number | null = null
+    if (basePostcode) {
+      try {
+        const geo = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(basePostcode)}`)
+        const geoJson = await geo.json()
+        if (geoJson.status === 200) {
+          base_lat = geoJson.result.latitude
+          base_lng = geoJson.result.longitude
+        }
+      } catch {
+        // Non-fatal — matching will fall back to postcode district only
+      }
+    }
+
     // Create installer record
     const { data: installer, error: instError } = await supabase
       .from('installers')
       .insert({
         user_id: authData.user.id,
         company_name: companyName,
+        trading_name: tradingName || null,
         companies_house_number: companiesHouseNumber || null,
         contact_name: contactName,
         contact_email: contactEmail,
@@ -48,6 +65,8 @@ export async function POST(req: NextRequest) {
           .split(',')
           .map((p: string) => p.trim().toUpperCase())
           .filter(Boolean),
+        base_lat,
+        base_lng,
         status: 'pending',
         trustpilot_url: trustpilotUrl || null,
       })
