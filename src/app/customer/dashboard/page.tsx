@@ -19,7 +19,7 @@ export default async function CustomerDashboard() {
 
   const { data: enquiries } = await supabase
     .from('enquiries')
-    .select('id, reference, products, postcode, status, created_at')
+    .select('id, reference, products, postcode, status, created_at, jobs(id)')
     .eq('customer_id', customer?.id || '')
     .order('created_at', { ascending: false })
 
@@ -67,6 +67,8 @@ export default async function CustomerDashboard() {
           <div className="space-y-3">
             {enquiries.map(enq => {
               const st = statusBadge[enq.status] || { label: enq.status, variant: 'neutral' as const }
+              const jobId = Array.isArray(enq.jobs) ? enq.jobs[0]?.id : (enq.jobs as { id: string } | null)?.id
+              const postDepositStatuses = ['deposit_paid', 'survey_booked', 'install_scheduled', 'installation_confirmed', 'install_complete', 'complete']
               return (
                 <Card key={enq.id}>
                   <div className="flex items-start justify-between gap-4">
@@ -83,6 +85,20 @@ export default async function CustomerDashboard() {
                         <div className="mt-2">
                           <Link href={`/customer/quotes/${enq.id}`} className="text-sm font-semibold text-ws-green hover:text-ws-green-deep">
                             Compare quotes →
+                          </Link>
+                        </div>
+                      )}
+                      {enq.status === 'client_deciding' && (
+                        <div className="mt-2">
+                          <Link href={`/customer/quotes/${enq.id}`} className="text-sm font-semibold text-ws-green hover:text-ws-green-deep">
+                            Complete your payment →
+                          </Link>
+                        </div>
+                      )}
+                      {postDepositStatuses.includes(enq.status) && jobId && (
+                        <div className="mt-2">
+                          <Link href={`/customer/jobs/${jobId}`} className="text-sm font-semibold text-ws-green hover:text-ws-green-deep">
+                            Track your job →
                           </Link>
                         </div>
                       )}
