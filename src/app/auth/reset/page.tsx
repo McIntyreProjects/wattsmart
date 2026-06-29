@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState('')
@@ -9,7 +10,11 @@ export default function ResetPasswordPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // Always show the same "check your email" state — never reveal if account exists
+    const supabase = createClient()
+    // Fire the reset email — always show the same "check your email" state to avoid account enumeration
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: process.env.NEXT_PUBLIC_SITE_URL + '/auth/reset/new',
+    })
     setSent(true)
   }
 

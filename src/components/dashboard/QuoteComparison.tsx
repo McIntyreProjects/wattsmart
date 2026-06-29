@@ -121,6 +121,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [depositAmount, setDepositAmount] = useState(0)
   const [selecting, setSelecting] = useState<string | null>(null)
+  const [selectError, setSelectError] = useState<string | null>(null)
 
   // After payment — show installer
   const [installer, setInstaller] = useState<InstallerData | null>(null)
@@ -139,6 +140,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
 
   const handleSelect = async (quote: Quote) => {
     setSelecting(quote.id)
+    setSelectError(null)
     const res = await fetch('/api/quotes/select', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -146,7 +148,10 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
     })
     const data = await res.json()
     setSelecting(null)
-    if (!res.ok) return
+    if (!res.ok) {
+      setSelectError('Failed to select quote. Please try again.')
+      return
+    }
 
     setSelectedQuote(quote)
     setClientSecret(data.clientSecret)
@@ -287,6 +292,10 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
         All three installers are MCS certified and independently verified by WattSmart. None of them can contact you directly.
       </p>
       <p className="text-xs text-ws-muted mb-8">{enquiry?.reference}</p>
+
+      {selectError && (
+        <p className="text-xs text-[#C2603F] mb-4">{selectError}</p>
+      )}
 
       <div className="space-y-4">
         {quotes.map(q => (

@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/ui/Logo'
+import { createClient } from '@/lib/supabase/client'
 
 function getStrength(pw: string) {
   if (pw.length === 0) return { label: '', color: '' }
@@ -15,10 +17,32 @@ export default function SetNewPasswordPage() {
   const [pw, setPw] = useState('')
   const [confirm, setConfirm] = useState('')
   const [show, setShow] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
   const strength = getStrength(pw)
   const hasLength = pw.length >= 8
   const hasSymbol = /[0-9!@#$%^&*]/.test(pw)
-  const email = 'sarah.m@email.com' // In production, extract from token
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    const supabase = createClient()
+    const { error: updateError, data } = await supabase.auth.updateUser({ password: pw })
+    setLoading(false)
+    if (updateError) {
+      setError(updateError.message || 'Failed to update password. Please try again.')
+      return
+    }
+    // Redirect based on role
+    const role = data.user?.user_metadata?.role
+    if (role === 'installer') {
+      router.push('/installer/dashboard')
+    } else {
+      router.push('/customer/dashboard')
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5" style={{ background: '#E7EAE7' }}>
@@ -29,9 +53,9 @@ export default function SetNewPasswordPage() {
 
         <div className="bg-white rounded-card border border-ws-border p-7">
           <h1 className="font-display font-extrabold text-xl tracking-tight mb-0.5">Create a new password</h1>
-          <p className="text-sm text-ws-muted mb-6">for {email}</p>
+          <p className="text-sm text-ws-muted mb-6">Enter and confirm your new password below.</p>
 
-          <form className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label className="block text-xs font-semibold mb-1.5 text-ws-muted uppercase tracking-wide">New password</label>
               <div className="relative">
@@ -82,12 +106,14 @@ export default function SetNewPasswordPage() {
               </div>
             </div>
 
+            {error && <p className="text-xs text-[#C2603F]">{error}</p>}
+
             <button
               type="submit"
-              disabled={!hasLength || !hasSymbol || pw !== confirm}
+              disabled={!hasLength || !hasSymbol || pw !== confirm || loading}
               className="bg-ws-green text-white rounded-btn py-3 font-bold text-sm hover:bg-ws-green-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Save &amp; sign in
+              {loading ? 'Saving…' : 'Save & sign in'}
             </button>
           </form>
         </div>
