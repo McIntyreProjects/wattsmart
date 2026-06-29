@@ -314,7 +314,7 @@ export function SmartForm() {
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <p className="eyebrow mb-3">4 / 6</p>
+            <p className="eyebrow mb-3">3 / 6</p>
             <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
               Your energy usage
             </h2>
