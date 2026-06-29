@@ -126,7 +126,7 @@ export function SmartForm() {
     if (step === 1) return !!(data.postcode && data.propertyType && data.propertyAge && data.ownership)
     if (step === 2) return !!(data.monthlyKwh && data.monthlyBill)
     if (step === 3) return data.goal !== ''
-    if (step === 4) return !!(data.firstName && data.lastName && data.email)
+    if (step === 4) return !!(data.firstName && data.lastName && data.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
     return true
   }
 
@@ -355,7 +355,7 @@ export function SmartForm() {
       {/* Step 3 — Goal */}
       {step === 3 && (
         <div>
-          <p className="eyebrow mb-3">5 / 6</p>
+          <p className="eyebrow mb-3">4 / 6</p>
           <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
             What&apos;s your goal?
           </h2>
@@ -381,16 +381,10 @@ export function SmartForm() {
       {step === 4 && (
         <div className="space-y-4">
           <div>
-            <p className="eyebrow mb-3">6 / 6</p>
+            <p className="eyebrow mb-3">5 / 6</p>
             <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
               Where should installers quote for?
             </h2>
-          </div>
-          <div className="bg-ws-green-tint border border-ws-green/20 rounded-tile p-4 text-sm">
-            <span className="font-semibold text-ws-green-deep">Used WattSmart before?</span>
-            {' '}
-            <button className="underline text-ws-green font-medium" type="button">Log in to autofill →</button>
-            <p className="text-ws-muted mt-1 text-xs">— or just fill it in below —</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -447,63 +441,65 @@ export function SmartForm() {
       )}
 
       {/* Step 5 — Recommendation */}
-      {step === 5 && recommendation && (
+      {step === 5 && (
         <div>
-          <p className="eyebrow mb-3">Your recommendation</p>
+          <p className="eyebrow mb-3">6 / 6</p>
           <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
             Here&apos;s what we recommend.
           </h2>
 
-          <div className="space-y-3 mb-8">
-            {data.products.includes('solar') && recommendation.panels && (
-              <div className="bg-ws-card rounded-card border border-ws-border p-5">
-                <span className="tag-solar inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Solar panels</span>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><div className="text-ws-muted text-xs">Panels</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.panels}</div></div>
-                  <div><div className="text-ws-muted text-xs">System size</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.systemKwp} kWp</div></div>
-                  <div><div className="text-ws-muted text-xs">Annual saving</div><div className="font-semibold text-ws-green mt-0.5">~£{recommendation.annualSaving?.toLocaleString()}/yr</div></div>
-                  <div><div className="text-ws-muted text-xs">Payback</div><div className="font-semibold text-ws-ink mt-0.5">~{recommendation.paybackYears} yrs</div></div>
-                </div>
-                {recommendation.systemCost && (
-                  <div className="mt-3 pt-3 border-t border-ws-border text-sm">
-                    <span className="text-ws-muted text-xs">Estimated cost: </span>
-                    <span className="font-semibold text-ws-ink">{formatCurrency(recommendation.systemCost * 100)}</span>
+          {recommendation && (
+            <div className="space-y-3 mb-8">
+              {data.products.includes('solar') && recommendation.panels && (
+                <div className="bg-ws-card rounded-card border border-ws-border p-5">
+                  <span className="tag-solar inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Solar panels</span>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><div className="text-ws-muted text-xs">Panels</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.panels}</div></div>
+                    <div><div className="text-ws-muted text-xs">System size</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.systemKwp} kWp</div></div>
+                    <div><div className="text-ws-muted text-xs">Annual saving</div><div className="font-semibold text-ws-green mt-0.5">~£{recommendation.annualSaving?.toLocaleString()}/yr</div></div>
+                    <div><div className="text-ws-muted text-xs">Payback</div><div className="font-semibold text-ws-ink mt-0.5">~{recommendation.paybackYears} yrs</div></div>
                   </div>
-                )}
-              </div>
-            )}
-            {data.products.includes('battery') && recommendation.batteryKwh && (
-              <div className="bg-ws-card rounded-card border border-ws-border p-5">
-                <span className="tag-battery inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Battery storage</span>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><div className="text-ws-muted text-xs">Capacity</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.batteryKwh} kWh</div></div>
-                  <div><div className="text-ws-muted text-xs">Coverage</div><div className="font-semibold text-ws-ink mt-0.5">~{Math.round(recommendation.batteryKwh / 0.5)} hrs</div></div>
+                  {recommendation.systemCost && (
+                    <div className="mt-3 pt-3 border-t border-ws-border text-sm">
+                      <span className="text-ws-muted text-xs">Estimated cost: </span>
+                      <span className="font-semibold text-ws-ink">{formatCurrency(recommendation.systemCost * 100)}</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-ws-muted mt-2">10-year warranty typical</p>
-              </div>
-            )}
-            {data.products.includes('heatpump') && (
-              <div className="bg-ws-card rounded-card border border-ws-border p-5">
-                <span className="tag-heatpump inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Heat pump</span>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><div className="text-ws-muted text-xs">Type</div><div className="font-semibold text-ws-ink mt-0.5">Air source</div></div>
-                  <div><div className="text-ws-muted text-xs">Grant available</div><div className="font-semibold text-ws-green mt-0.5">£7,500*</div></div>
-                  <div><div className="text-ws-muted text-xs">Bill saving</div><div className="font-semibold text-ws-ink mt-0.5">~40%</div></div>
-                  <div><div className="text-ws-muted text-xs">Efficiency</div><div className="font-semibold text-ws-ink mt-0.5">300%+</div></div>
+              )}
+              {data.products.includes('battery') && recommendation.batteryKwh && (
+                <div className="bg-ws-card rounded-card border border-ws-border p-5">
+                  <span className="tag-battery inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Battery storage</span>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><div className="text-ws-muted text-xs">Capacity</div><div className="font-semibold text-ws-ink mt-0.5">{recommendation.batteryKwh} kWh</div></div>
+                    <div><div className="text-ws-muted text-xs">Coverage</div><div className="font-semibold text-ws-ink mt-0.5">~{Math.round(recommendation.batteryKwh / 0.5)} hrs</div></div>
+                  </div>
+                  <p className="text-xs text-ws-muted mt-2">10-year warranty typical</p>
                 </div>
-                <p className="text-xs text-ws-muted mt-2">*Boiler Upgrade Scheme — subject to eligibility.</p>
-              </div>
-            )}
-            {data.products.includes('ev') && (
-              <div className="bg-ws-card rounded-card border border-ws-border p-5">
-                <span className="tag-ev inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">EV charger</span>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><div className="text-ws-muted text-xs">Output</div><div className="font-semibold text-ws-ink mt-0.5">7kW</div></div>
-                  <div><div className="text-ws-muted text-xs">Full charge</div><div className="font-semibold text-ws-ink mt-0.5">~8 hours</div></div>
+              )}
+              {data.products.includes('heatpump') && (
+                <div className="bg-ws-card rounded-card border border-ws-border p-5">
+                  <span className="tag-heatpump inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">Heat pump</span>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><div className="text-ws-muted text-xs">Type</div><div className="font-semibold text-ws-ink mt-0.5">Air source</div></div>
+                    <div><div className="text-ws-muted text-xs">Grant available</div><div className="font-semibold text-ws-green mt-0.5">£7,500*</div></div>
+                    <div><div className="text-ws-muted text-xs">Bill saving</div><div className="font-semibold text-ws-ink mt-0.5">~40%</div></div>
+                    <div><div className="text-ws-muted text-xs">Efficiency</div><div className="font-semibold text-ws-ink mt-0.5">300%+</div></div>
+                  </div>
+                  <p className="text-xs text-ws-muted mt-2">*Boiler Upgrade Scheme — subject to eligibility.</p>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+              {data.products.includes('ev') && (
+                <div className="bg-ws-card rounded-card border border-ws-border p-5">
+                  <span className="tag-ev inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold mb-3">EV charger</span>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><div className="text-ws-muted text-xs">Output</div><div className="font-semibold text-ws-ink mt-0.5">7kW</div></div>
+                    <div><div className="text-ws-muted text-xs">Full charge</div><div className="font-semibold text-ws-ink mt-0.5">~8 hours</div></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="bg-ws-green-tint border border-ws-green/20 rounded-card p-4 mb-6 text-sm leading-relaxed text-ws-body">
             We&apos;ll send your anonymous property details to three trusted, certified local installers. They&apos;ll each provide a quote — you compare them side by side without knowing who&apos;s who.
@@ -513,6 +509,16 @@ export function SmartForm() {
           <Button onClick={submit} loading={loading} className="w-full">
             Request 3 anonymous quotes →
           </Button>
+
+          <div className="mt-4 flex justify-start">
+            <button
+              type="button"
+              onClick={() => setStep(4)}
+              className="text-sm text-ws-muted hover:text-ws-body font-medium"
+            >
+              ← Back
+            </button>
+          </div>
         </div>
       )}
 
