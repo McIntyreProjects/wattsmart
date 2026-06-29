@@ -22,19 +22,8 @@ const INITIAL_MEMBERS: TeamMember[] = [
 ]
 
 export default function InstallerTeamPage() {
-  const userRole: Role = 'member' // TODO: replace with real role from auth context
-
-  if (userRole === 'member') {
-    return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
-        <div className="max-w-sm text-center">
-          <p className="font-display font-extrabold text-xl tracking-tight mb-2">Access restricted</p>
-          <p className="text-sm text-ws-muted">Only Managers can view and manage the team. Contact your Manager if you need access.</p>
-          <Link href="/installer/dashboard" className="inline-block mt-5 text-sm text-ws-dark-green font-semibold hover:underline">← Back to dashboard</Link>
-        </div>
-      </div>
-    )
-  }
+  const userRole: Role = 'manager' // TODO: replace with real role from auth context
+  const isManager = userRole === 'manager'
 
   const [members, setMembers] = useState<TeamMember[]>(INITIAL_MEMBERS)
   const [showInvite, setShowInvite] = useState(false)
@@ -49,7 +38,7 @@ export default function InstallerTeamPage() {
       id: Date.now().toString(),
       name: '',
       email: inviteEmail,
-      role: inviteRole,
+      role: isManager ? inviteRole : 'member',
       status: 'pending',
       joinedAt: '',
     }])
@@ -86,7 +75,9 @@ export default function InstallerTeamPage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="font-display font-extrabold text-2xl tracking-tight mb-1">Team</h1>
-            <p className="text-sm text-ws-muted">Northside Solar Co. · {members.filter(m => m.status === 'active').length} active · {members.filter(m => m.status === 'pending').length} pending</p>
+            <p className="text-sm text-ws-muted">
+              Northside Solar Co. · {members.filter(m => m.status === 'active').length} active · {members.filter(m => m.status === 'pending').length} pending
+            </p>
           </div>
           <button
             onClick={() => setShowInvite(true)}
@@ -96,18 +87,24 @@ export default function InstallerTeamPage() {
           </button>
         </div>
 
-        {/* Role explanation */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {[
-            { role: 'Manager', desc: 'Can invite and manage team members, see performance metrics, and action all quotes and jobs.' },
-            { role: 'Member',  desc: 'Can review quote requests, submit details, and update certifications. Cannot manage the team or see metrics.' },
-          ].map(r => (
-            <div key={r.role} className="border border-ws-border rounded-tile px-4 py-3 bg-white">
-              <p className="text-xs font-bold text-ws-ink mb-1">{r.role}</p>
-              <p className="text-xs text-ws-muted leading-relaxed">{r.desc}</p>
-            </div>
-          ))}
-        </div>
+        {/* Role explanation — managers see both, members just see a note about their own role */}
+        {isManager ? (
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {[
+              { role: 'Manager', desc: 'Can invite Members or Managers, change roles, remove team members, and see performance metrics.' },
+              { role: 'Member',  desc: 'Can invite other Members, review quotes, submit details, and update certifications.' },
+            ].map(r => (
+              <div key={r.role} className="border border-ws-border rounded-tile px-4 py-3 bg-white">
+                <p className="text-xs font-bold text-ws-ink mb-1">{r.role}</p>
+                <p className="text-xs text-ws-muted leading-relaxed">{r.desc}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-[#F2F6F3] border border-ws-border rounded-tile px-4 py-3 text-xs text-ws-muted mb-6 leading-relaxed">
+            You can invite colleagues as <strong className="text-ws-ink">Members</strong>. Only Managers can promote someone to Manager or remove team members.
+          </div>
+        )}
 
         {/* Invite panel */}
         {showInvite && (
@@ -124,30 +121,39 @@ export default function InstallerTeamPage() {
                   className="w-full border border-ws-border rounded-btn px-3 py-2.5 text-sm focus:outline-none focus:border-ws-green"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-ws-muted mb-1.5">Role</label>
-                <div className="flex gap-2">
-                  {(['member', 'manager'] as Role[]).map(r => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setInviteRole(r)}
-                      className={`flex-1 rounded-btn py-2.5 text-sm font-semibold border-2 transition-colors capitalize ${
-                        inviteRole === r
-                          ? 'border-ws-green bg-[#F1FAF5] text-ws-dark-green'
-                          : 'border-ws-border text-ws-muted'
-                      }`}
-                    >
-                      {r.charAt(0).toUpperCase() + r.slice(1)}
-                    </button>
-                  ))}
+
+              {/* Role picker — Managers choose, Members always invite as Member */}
+              {isManager ? (
+                <div>
+                  <label className="block text-xs font-semibold text-ws-muted mb-1.5">Role</label>
+                  <div className="flex gap-2">
+                    {(['member', 'manager'] as Role[]).map(r => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setInviteRole(r)}
+                        className={`flex-1 rounded-btn py-2.5 text-sm font-semibold border-2 transition-colors ${
+                          inviteRole === r
+                            ? 'border-ws-green bg-[#F1FAF5] text-ws-dark-green'
+                            : 'border-ws-border text-ws-muted'
+                        }`}
+                      >
+                        {r.charAt(0).toUpperCase() + r.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-ws-muted mt-1.5">
+                    {inviteRole === 'manager'
+                      ? 'Managers can invite others, change roles, and see performance metrics.'
+                      : 'Members can action quotes, submit details, and invite other Members.'}
+                  </p>
                 </div>
-                <p className="text-xs text-ws-muted mt-1.5">
-                  {inviteRole === 'manager'
-                    ? 'Managers can invite others and see performance metrics.'
-                    : 'Members can action quotes and update certifications.'}
-                </p>
-              </div>
+              ) : (
+                <div className="bg-[#F2F6F3] rounded-btn px-3 py-2.5 text-xs text-ws-muted">
+                  They will be invited as a <strong className="text-ws-ink">Member</strong>. Only a Manager can invite someone as a Manager.
+                </div>
+              )}
+
               <div className="flex gap-2 pt-1">
                 {inviteSent ? (
                   <div className="flex-1 text-center py-2.5 text-sm font-bold text-ws-dark-green bg-[#F1FAF5] rounded-btn border-2 border-ws-green">
@@ -198,28 +204,33 @@ export default function InstallerTeamPage() {
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {m.status === 'pending' ? (
                     <span className="text-xs border border-amber-200 bg-amber-50 text-amber-700 rounded-pill px-2.5 py-1">Invite pending</span>
-                  ) : m.you ? (
+                  ) : m.you || !isManager ? (
+                    /* Members and "you" see a static role badge — no dropdown */
                     <span className="text-xs border border-ws-border rounded-pill px-2.5 py-1 capitalize text-ws-muted">{m.role}</span>
                   ) : (
+                    /* Managers see a role dropdown for everyone else */
                     <select
                       value={m.role}
                       onChange={e => changeRole(m.id, e.target.value as Role)}
-                      className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-ws-green capitalize"
+                      className="text-xs border border-ws-border rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:border-ws-green"
                     >
                       <option value="member">Member</option>
                       <option value="manager">Manager</option>
                     </select>
                   )}
 
-                  {!m.you && confirmRemove === m.id ? (
-                    <div className="flex gap-1.5">
-                      <button onClick={() => removeMember(m.id)} className="text-xs font-semibold text-[#C2603F] hover:underline">Remove</button>
-                      <span className="text-ws-subtle text-xs">·</span>
-                      <button onClick={() => setConfirmRemove(null)} className="text-xs text-ws-muted hover:underline">Cancel</button>
-                    </div>
-                  ) : !m.you ? (
-                    <button onClick={() => setConfirmRemove(m.id)} className="text-xs text-ws-muted hover:text-[#C2603F]">Remove</button>
-                  ) : null}
+                  {/* Only Managers can remove — and not themselves */}
+                  {isManager && !m.you && (
+                    confirmRemove === m.id ? (
+                      <div className="flex gap-1.5">
+                        <button onClick={() => removeMember(m.id)} className="text-xs font-semibold text-[#C2603F] hover:underline">Remove</button>
+                        <span className="text-ws-subtle text-xs">·</span>
+                        <button onClick={() => setConfirmRemove(null)} className="text-xs text-ws-muted hover:underline">Cancel</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setConfirmRemove(m.id)} className="text-xs text-ws-muted hover:text-[#C2603F]">Remove</button>
+                    )
+                  )}
                 </div>
               </div>
             </div>
@@ -227,7 +238,9 @@ export default function InstallerTeamPage() {
         </div>
 
         <p className="text-xs text-ws-muted mt-4 leading-relaxed">
-          Invited users will receive an email with a link to create their WattSmart account and join your workspace. You can remove or change their role at any time.
+          {isManager
+            ? 'Invited users will receive an email with a link to create their WattSmart account and join your workspace. You can change their role or remove them at any time.'
+            : 'Invited users will receive an email with a link to create their WattSmart account and join your workspace as a Member.'}
         </p>
       </div>
     </div>
