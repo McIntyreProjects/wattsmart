@@ -10,19 +10,23 @@ export async function POST() {
 
     const admin = await createAdminClient()
 
-    // Resolve installer record
+    // Resolve installer record and check role — only managers can set up payouts
     let installerId: string | null = null
 
     const { data: membership } = await supabase
       .from('installer_users')
-      .select('installer_id')
+      .select('installer_id, role')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .maybeSingle()
 
     if (membership) {
+      if (membership.role !== 'manager') {
+        return NextResponse.json({ error: 'Only managers can set up payouts.' }, { status: 403 })
+      }
       installerId = membership.installer_id
     } else {
+      // Primary account holder (the user who registered) is always a manager
       const { data: ins } = await supabase
         .from('installers')
         .select('id')
