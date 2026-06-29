@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendNewInstallerApplication } from '@/lib/email'
+import { rateLimit } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
+  const ip = (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
+  if (!rateLimit(ip, 3, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment and try again.' }, { status: 429, headers: { 'Retry-After': '60' } })
+  }
+
   try {
     const body = await req.json()
     const {
