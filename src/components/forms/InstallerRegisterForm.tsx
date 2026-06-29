@@ -175,7 +175,7 @@ const canProceed = () => {
       return required.every(f => data.certifications[f.id]?.number)
     }
     if (step === 3) return data.coveragePostcodes.trim().length > 0
-    if (step === 4) return !!(data.password && data.password === data.passwordConfirm)
+    if (step === 4) return !!(data.password && data.password.length >= 8 && data.password === data.passwordConfirm)
     return true
   }
 
@@ -405,7 +405,10 @@ const canProceed = () => {
           </div>
           <FieldInput label="Password" type="password" value={data.password} onChange={v => set('password', v)} />
           <FieldInput label="Confirm password" type="password" value={data.passwordConfirm} onChange={v => set('passwordConfirm', v)} />
-          {data.password && data.passwordConfirm && data.password !== data.passwordConfirm && (
+          {data.password && data.password.length < 8 && (
+            <p className="text-ws-red-text text-sm">Password must be at least 8 characters.</p>
+          )}
+          {data.password && data.password.length >= 8 && data.passwordConfirm && data.password !== data.passwordConfirm && (
             <p className="text-ws-red-text text-sm">Passwords don&apos;t match.</p>
           )}
 

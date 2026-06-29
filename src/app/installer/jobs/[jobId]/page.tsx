@@ -98,6 +98,17 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
             <p className="font-semibold text-ws-green-deep mb-1">Job complete</p>
             <p className="text-sm text-ws-muted">This job has been marked as complete.</p>
           </div>
+        ) : ['quote_selected', 'revealed'].includes(job.status) ? (
+          <div className="bg-ws-green-tint border border-ws-green/30 rounded-card p-5">
+            <p className="font-semibold text-ws-green-deep mb-1">Your quote was selected — now propose an installation date.</p>
+            <p className="text-sm text-ws-muted mb-4">The customer has chosen you. Book a date to confirm the job and trigger the deposit payment.</p>
+            <Link
+              href={`/installer/jobs/${jobId}/schedule`}
+              className="inline-block bg-ws-green text-white font-semibold text-sm px-4 py-2.5 rounded-btn hover:bg-ws-green-deep transition-colors"
+            >
+              Book an install date →
+            </Link>
+          </div>
         ) : (
           <p className="text-ws-muted text-sm">
             {deadlinePast && job.status === 'brief_sent' ? 'The quote deadline has passed.' : 'Quote already submitted for this job.'}

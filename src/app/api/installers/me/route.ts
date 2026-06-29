@@ -122,7 +122,7 @@ export async function GET() {
 
       if (jobs) {
         metrics.jobsReceived = jobs.length
-        metrics.jobsWon = jobs.filter((j: { status: string }) => j.status === 'won' || j.status === 'completed').length
+        metrics.jobsWon = jobs.filter((j: { status: string }) => ['quote_selected', 'installation_confirmed', 'install_complete', 'complete'].includes(j.status)).length
       }
       if (quotes) {
         metrics.quotesSubmitted = quotes.length

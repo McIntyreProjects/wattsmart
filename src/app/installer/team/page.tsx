@@ -142,6 +142,7 @@ export default function InstallerTeamPage() {
           <Link href="/installer/profile" className="hover:text-ws-ink">Profile</Link>
           <Link href="/installer/team" className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Team</Link>
           <Link href="/installer/fees" className="hover:text-ws-ink">Fees</Link>
+          <Link href="/installer/performance" className="hover:text-ws-ink">Performance</Link>
         </div>
       </nav>
 

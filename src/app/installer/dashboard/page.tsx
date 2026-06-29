@@ -61,7 +61,7 @@ export default async function InstallerDashboard() {
 
   const metrics = {
     newBriefs:   (jobs || []).filter(j => j.status === 'brief_sent').length,
-    quotePending: (jobs || []).filter(j => j.status === 'brief_sent').length,
+    quotePending: (jobs || []).filter(j => j.status === 'quote_submitted').length,
     inProgress:  (jobs || []).filter(j => ['quote_selected', 'revealed', 'installation_confirmed'].includes(j.status)).length,
     feesDue:     (fees || []).reduce((s, f) => s + f.amount, 0),
   }

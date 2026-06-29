@@ -422,18 +422,7 @@ export default function InstallerProfilePage() {
               </div>
             )}
 
-            {/* Balance payment default */}
-            <p className="eyebrow mb-1">Balance payment — default</p>
-            <p className="text-xs text-ws-subtle mb-3 leading-relaxed">When your proposed date is accepted, we ask the customer for the balance this far ahead.</p>
-            <div className="flex gap-2 flex-wrap mb-6">
-              {['3 days before', '7 days before', '14 days before', 'On the day'].map((opt) => (
-                <button key={opt} className={`border rounded-lg px-3 py-2 text-sm whitespace-nowrap ${
-                  opt === '7 days before'
-                    ? 'border-2 border-ws-green bg-[#F1FAF5] text-ws-dark-green font-bold'
-                    : 'border-ws-border text-ws-muted'
-                }`}>{opt}</button>
-              ))}
-            </div>
+            {/* Balance payment default — hidden until balance_payment_days migration is added */}
 
             {/* Payout */}
             <p className="eyebrow mb-3">Payout account</p>
