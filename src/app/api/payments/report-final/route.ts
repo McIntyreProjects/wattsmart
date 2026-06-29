@@ -23,6 +23,29 @@ export async function POST(req: NextRequest) {
 
     if (!installer) return NextResponse.json({ error: 'Installer not found' }, { status: 404 })
 
+    // Ownership check: installer must have a job for this enquiry
+    const { data: job } = await admin.from('jobs')
+      .select('id')
+      .eq('enquiry_id', enquiryId)
+      .eq('installer_id', installer.id)
+      .maybeSingle()
+    if (!job) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    // Idempotency: return existing final payment if already reported
+    const { data: existing } = await admin.from('payments')
+      .select('id')
+      .eq('enquiry_id', enquiryId)
+      .eq('installer_id', installer.id)
+      .eq('type', 'final')
+      .maybeSingle()
+    if (existing) {
+      const { data: existingInvoice } = await admin.from('fee_invoices')
+        .select('id')
+        .eq('payment_id', existing.id)
+        .maybeSingle()
+      return NextResponse.json({ invoiceId: existingInvoice?.id })
+    }
+
     const amountPence = Math.round(parseFloat(finalAmount) * 100)
 
     // Look up the deposit payment already collected for this enquiry

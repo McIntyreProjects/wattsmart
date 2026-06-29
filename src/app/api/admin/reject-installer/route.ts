@@ -6,12 +6,14 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.user_metadata?.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const admin = await createAdminClient()
+    const { data: { user: fullUser } } = await admin.auth.admin.getUserById(user.id)
+    if (fullUser?.app_metadata?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { installerId, reason } = await req.json()
-    const admin = await createAdminClient()
 
     const { data: installer } = await admin
       .from('installers')

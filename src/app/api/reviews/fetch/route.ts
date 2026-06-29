@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 async function anonymiseReview(text: string, installerName: string, staffNames: string[], phone: string, website: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -47,6 +47,11 @@ ${text}`,
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth check: must be logged in to prevent API cost abuse by bots
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { installerId, source } = await req.json()
     const admin = await createAdminClient()
 

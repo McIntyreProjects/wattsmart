@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyCert } from '@/lib/cert-verification'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth check: must be logged in and have admin role (via app_metadata)
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const adminClient = await createAdminClient()
+    const { data: { user: fullUser } } = await adminClient.auth.admin.getUserById(user.id)
+    if (fullUser?.app_metadata?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { certId, type, number, installerId } = await req.json()
 
     if (!type || !number) {
@@ -13,8 +23,7 @@ export async function POST(req: NextRequest) {
     const result = await verifyCert(type, number)
 
     if (certId) {
-      const supabase = await createAdminClient()
-      await supabase
+      await adminClient
         .from('certifications')
         .update({
           status: result.verified ? 'verified' : 'failed',
@@ -25,8 +34,7 @@ export async function POST(req: NextRequest) {
         })
         .eq('id', certId)
     } else if (installerId) {
-      const supabase = await createAdminClient()
-      await supabase
+      await adminClient
         .from('certifications')
         .upsert({
           installer_id: installerId,

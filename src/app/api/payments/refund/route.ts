@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' })
   try {
+    // Auth check: caller must be logged in
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const { paymentId } = await req.json()
     const admin = await createAdminClient()
 
@@ -15,6 +20,17 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (!payment) return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
+
+    // Ownership check: the authenticated user must own the enquiry
+    const { data: enquiry } = await admin
+      .from('enquiries')
+      .select('customers(user_id)')
+      .eq('id', payment.enquiry_id)
+      .single()
+    const ownerId = (enquiry?.customers as { user_id: string } | null)?.user_id
+    if (ownerId !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
     if (payment.status === 'released') {
       return NextResponse.json({ error: 'Cannot refund a released payment' }, { status: 400 })
     }

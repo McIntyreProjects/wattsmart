@@ -11,7 +11,9 @@ export async function POST(req: NextRequest) {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { data: { user: fullUser } } = await (await createAdminClient()).auth.admin.getUserById(user.id)
+  if (fullUser?.app_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
