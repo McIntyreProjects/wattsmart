@@ -67,8 +67,20 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
   } | null
 
   // Only reveal installer details after deposit is paid
-  const INSTALLER_VISIBLE_STATUSES = ['deposit_paid', 'install_scheduled', 'install_complete', 'complete']
+  const INSTALLER_VISIBLE_STATUSES = ['deposit_paid', 'survey_booked', 'installation_confirmed', 'install_scheduled', 'install_complete', 'complete']
   const showInstaller = INSTALLER_VISIBLE_STATUSES.includes(enquiry.status)
+
+  // Timeline progress derived from job/enquiry status
+  // Steps: 1=deposit paid, 2=survey/design, 3=balance+install, 4=installation day, 5=certs
+  const s = enquiry.status
+  const step1Done = ['deposit_paid','survey_booked','installation_confirmed','install_scheduled','install_complete','complete'].includes(s)
+  const step2Done = ['survey_booked','installation_confirmed','install_scheduled','install_complete','complete'].includes(s)
+  const step2InProgress = s === 'deposit_paid'
+  const step3Done = ['installation_confirmed','install_scheduled','install_complete','complete'].includes(s)
+  const step3InProgress = s === 'survey_booked'
+  const step4Done = ['install_complete','complete'].includes(s)
+  const step4InProgress = ['installation_confirmed','install_scheduled'].includes(s)
+  const step5Done = s === 'complete'
 
   const installerName = installer
     ? (installer.trading_name || installer.company_name)
@@ -118,85 +130,121 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
         {/* Timeline */}
         <div className="flex flex-col">
 
-          {/* Step 1 — done */}
+          {/* Step 1 — Deposit paid */}
           <div className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
-              <span className="flex-1 w-0.5 bg-ws-green my-1" />
+              {step1Done
+                ? <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                : <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">1</span>
+              }
+              <span className={`flex-1 w-0.5 my-1 ${step1Done ? 'bg-ws-green' : 'bg-ws-border'}`} />
             </div>
             <div className="pb-5">
-              <p className="font-bold text-sm">Site survey complete</p>
-              <p className="text-xs text-ws-subtle mt-0.5">Awaiting report</p>
-            </div>
-          </div>
-
-          {/* Step 2 — in progress */}
-          <div className="flex gap-3">
-            <div className="flex flex-col items-center">
-              <span className="w-6 h-6 rounded-full border-2 border-amber-500 text-amber-500 flex items-center justify-center text-xs flex-shrink-0">◐</span>
-              <span className="flex-1 w-0.5 bg-ws-border my-1" />
-            </div>
-            <div className="pb-5">
-              <p className="font-bold text-sm">Design &amp; DNO approval (G99)</p>
-              <p className="text-sm text-ws-muted mt-1 leading-relaxed">
-                {showInstaller ? installerName : 'Your installer'} has submitted your G99 to the network operator. Approval expected in ~10 days.
+              <p className={`font-bold text-sm ${step1Done ? '' : 'text-ws-subtle'}`}>Deposit paid</p>
+              <p className="text-xs text-ws-subtle mt-0.5">
+                {step1Done ? (depositAmount !== null ? `£${depositAmount.toLocaleString('en-GB')} held securely` : 'Deposit held securely') : 'Pay deposit to get started'}
               </p>
-              <span className="inline-block mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">
-                In progress
-              </span>
             </div>
           </div>
 
-          {/* Step 3 — balance due */}
+          {/* Step 2 — Survey & design */}
           <div className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">£</span>
-              <span className="flex-1 w-0.5 bg-ws-border my-1" />
+              {step2Done
+                ? <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                : step2InProgress
+                  ? <span className="w-6 h-6 rounded-full border-2 border-amber-500 text-amber-500 flex items-center justify-center text-xs flex-shrink-0">◐</span>
+                  : <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">2</span>
+              }
+              <span className={`flex-1 w-0.5 my-1 ${step2Done ? 'bg-ws-green' : 'bg-ws-border'}`} />
+            </div>
+            <div className="pb-5">
+              <p className={`font-bold text-sm ${step2Done || step2InProgress ? '' : 'text-ws-subtle'}`}>Survey &amp; design</p>
+              {step2Done
+                ? <p className="text-xs text-ws-subtle mt-0.5">Survey complete, design approved</p>
+                : step2InProgress
+                  ? <>
+                      <p className="text-sm text-ws-muted mt-1 leading-relaxed">
+                        {showInstaller ? installerName : 'Your installer'} will be in touch to book a site survey.
+                      </p>
+                      <span className="inline-block mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1">In progress</span>
+                    </>
+                  : <p className="text-xs text-ws-subtle mt-0.5">Site survey &amp; system design</p>
+              }
+            </div>
+          </div>
+
+          {/* Step 3 — Balance & install date */}
+          <div className="flex gap-3">
+            <div className="flex flex-col items-center">
+              {step3Done
+                ? <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                : step3InProgress
+                  ? <span className="w-6 h-6 rounded-full border-2 border-amber-500 text-amber-500 flex items-center justify-center text-xs flex-shrink-0">◐</span>
+                  : <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">£</span>
+              }
+              <span className={`flex-1 w-0.5 my-1 ${step3Done ? 'bg-ws-green' : 'bg-ws-border'}`} />
             </div>
             <div className="pb-5 flex-1">
-              <p className="font-bold text-sm">Balance due before install</p>
-              {balance !== null ? (
-                <div className="border-2 border-ws-green bg-[#F1FAF5] rounded-tile p-3 mt-2">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs text-ws-muted">Balance</span>
-                    <span className="font-display font-extrabold text-xl">£{balance.toLocaleString('en-GB')}</span>
-                  </div>
-                  {depositAmount !== null && (
-                    <p className="text-xs text-ws-dark-green mt-1">Deposit paid: £{depositAmount.toLocaleString('en-GB')}</p>
-                  )}
-                  <Link
-                    href={`/customer/jobs/${jobId}/balance`}
-                    className="block bg-ws-green text-white rounded-btn p-3 text-center font-bold text-sm mt-3"
-                  >
-                    Pay balance →
-                  </Link>
-                </div>
-              ) : (
-                <p className="text-sm text-ws-muted mt-1">Balance will be shown once your total is confirmed.</p>
-              )}
+              <p className={`font-bold text-sm ${step3Done || step3InProgress ? '' : 'text-ws-subtle'}`}>Balance due before install</p>
+              {step3Done
+                ? <p className="text-xs text-ws-subtle mt-0.5">Balance paid, install date confirmed</p>
+                : balance !== null
+                  ? (
+                    <div className="border-2 border-ws-green bg-[#F1FAF5] rounded-tile p-3 mt-2">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-ws-muted">Balance</span>
+                        <span className="font-display font-extrabold text-xl">£{balance.toLocaleString('en-GB')}</span>
+                      </div>
+                      {depositAmount !== null && (
+                        <p className="text-xs text-ws-dark-green mt-1">Deposit paid: £{depositAmount.toLocaleString('en-GB')}</p>
+                      )}
+                      <Link
+                        href={`/customer/jobs/${jobId}/balance`}
+                        className="block bg-ws-green text-white rounded-btn p-3 text-center font-bold text-sm mt-3"
+                      >
+                        Pay balance →
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-ws-muted mt-1">Balance will be shown once your total is confirmed.</p>
+                  )
+              }
             </div>
           </div>
 
-          {/* Step 4 — pending */}
+          {/* Step 4 — Installation day */}
           <div className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">4</span>
-              <span className="flex-1 w-0.5 bg-ws-border my-1" />
+              {step4Done
+                ? <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                : step4InProgress
+                  ? <span className="w-6 h-6 rounded-full border-2 border-amber-500 text-amber-500 flex items-center justify-center text-xs flex-shrink-0">◐</span>
+                  : <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">4</span>
+              }
+              <span className={`flex-1 w-0.5 my-1 ${step4Done ? 'bg-ws-green' : 'bg-ws-border'}`} />
             </div>
             <div className="pb-5">
-              <p className="font-bold text-sm text-ws-subtle">Installation day</p>
-              <p className="text-xs text-ws-subtle mt-0.5">~1 day on site</p>
+              <p className={`font-bold text-sm ${step4Done || step4InProgress ? '' : 'text-ws-subtle'}`}>Installation day</p>
+              <p className="text-xs text-ws-subtle mt-0.5">
+                {step4Done ? 'Installation complete' : step4InProgress ? 'Date confirmed — see details above' : '~1 day on site'}
+              </p>
             </div>
           </div>
 
-          {/* Step 5 — pending */}
+          {/* Step 5 — Certificates */}
           <div className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">5</span>
+              {step5Done
+                ? <span className="w-6 h-6 rounded-full bg-ws-green text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                : <span className="w-6 h-6 rounded-full bg-[#F2F6F3] text-ws-subtle flex items-center justify-center text-xs flex-shrink-0">5</span>
+              }
             </div>
             <div>
-              <p className="font-bold text-sm text-ws-subtle">Certificates &amp; sign-off</p>
-              <p className="text-xs text-ws-subtle mt-0.5">MCS, electrical cert &amp; warranty land in your Documents.</p>
+              <p className={`font-bold text-sm ${step5Done ? '' : 'text-ws-subtle'}`}>Certificates &amp; sign-off</p>
+              <p className="text-xs text-ws-subtle mt-0.5">
+                {step5Done ? 'All done — certificates in your Documents.' : 'MCS, electrical cert &amp; warranty land in your Documents.'}
+              </p>
             </div>
           </div>
 
