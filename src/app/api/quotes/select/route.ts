@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { sendInstallerChosen } from '@/lib/email'
+import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,41 +28,47 @@ export async function POST(req: NextRequest) {
       .eq('id', quote.enquiry_id)
       .single()
 
-    if (!enquiry || (enquiry.customers as { user_id: string })?.user_id !== user.id) {
+    const custRecord = Array.isArray(enquiry?.customers) ? enquiry.customers[0] : enquiry?.customers
+    if (!enquiry || (custRecord as { user_id: string } | null)?.user_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Mark quote as selected
+    // Mark quote as selected, reject others
     await admin.from('quotes').update({ status: 'selected', selected_at: new Date().toISOString() }).eq('id', quoteId)
-
-    // Reject other quotes
-    await admin
-      .from('quotes')
-      .update({ status: 'rejected' })
-      .eq('enquiry_id', quote.enquiry_id)
-      .neq('id', quoteId)
-
-    // Update job and enquiry status
+    await admin.from('quotes').update({ status: 'rejected' }).eq('enquiry_id', quote.enquiry_id).neq('id', quoteId)
     await admin.from('jobs').update({ status: 'quote_selected' }).eq('id', quote.job_id)
     await admin.from('enquiries').update({ status: 'installer_chosen' }).eq('id', quote.enquiry_id)
 
-    // Fetch installer details for reveal
-    const { data: installer } = await admin
-      .from('installers')
-      .select('id, company_name, contact_name, contact_email, contact_phone')
-      .eq('id', quote.installer_id)
-      .single()
+    // Create Stripe payment intent (authorise only — capture on release)
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-02-24.acacia' })
+    const amountPence = Math.round(quote.deposit_amount * 100)
+    const intent = await stripe.paymentIntents.create({
+      amount: amountPence,
+      currency: 'gbp',
+      capture_method: 'manual',
+      metadata: {
+        enquiry_id: quote.enquiry_id,
+        quote_id: quoteId,
+        installer_id: quote.installer_id,
+      },
+    })
 
-    // Notify installer
-    if (installer) {
-      await sendInstallerChosen(
-        installer.contact_email,
-        enquiry.reference,
-        `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/installer/jobs/${quote.job_id}`
-      ).catch(console.error)
-    }
+    // Store payment record (not yet confirmed)
+    await admin.from('payments').insert({
+      enquiry_id: quote.enquiry_id,
+      installer_id: quote.installer_id,
+      amount: quote.deposit_amount,
+      installer_amount: quote.deposit_amount * 0.95,
+      stripe_payment_intent_id: intent.id,
+      status: 'pending',
+    })
 
-    return NextResponse.json({ installer })
+    // Return only what's needed for the payment form — NO installer details yet
+    return NextResponse.json({
+      clientSecret: intent.client_secret,
+      depositAmount: quote.deposit_amount,
+      reference: enquiry.reference,
+    })
   } catch (err) {
     console.error('Quote select error:', err)
     return NextResponse.json({ error: 'Failed to select quote' }, { status: 500 })

@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendCertExpiring } from '@/lib/email'
 
-export async function POST() {
+export async function POST(req: NextRequest) {
+  if (req.headers.get('x-cron-secret') !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   try {
     const admin = await createAdminClient()
     const thirtyDays = new Date(Date.now() + 30 * 86400000)

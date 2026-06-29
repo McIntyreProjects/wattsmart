@@ -27,24 +27,12 @@ export async function createClient() {
 }
 
 export async function createAdminClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient(
+  // Use the plain supabase-js client (not @supabase/ssr) so session cookies
+  // never override the service role key for database operations.
+  const { createClient } = await import('@supabase/supabase-js')
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {}
-        },
-      },
-    }
+    { auth: { autoRefreshToken: false, persistSession: false } }
   )
 }
