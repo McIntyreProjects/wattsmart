@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
+import { generateRoofDesign } from '@/lib/solar'
 import { sendEnquiryConfirmation, sendAdminAlert } from '@/lib/email'
 import { isLaunchPostcode, getPostcodeArea } from '@/lib/utils'
 import { rateLimit } from '@/lib/rateLimit'
@@ -154,6 +155,31 @@ export async function POST(req: NextRequest) {
       Sentry.captureException(new Error(`enquiry_addresses insert failed: ${addrError.message}`), {
         extra: { enquiryId: enquiry.id, reference: enquiry.reference },
       })
+    } else {
+      // Roof-layout Phase 1b: generate the panel layout from the address.
+      // Insert a 'pending' row now so the UI can show generation state, then
+      // schedule the pipeline with after() so it runs once the response has
+      // been sent (a bare fire-and-forget promise can be killed on Vercel).
+      // Must never affect the enquiry response.
+      try {
+        const { error: designError } = await supabase
+          .from('roof_designs')
+          .insert({ enquiry_id: enquiry.id, source: 'google_solar', status: 'pending' })
+        if (designError) {
+          console.error('roof_designs pending insert failed:', designError.message)
+        } else {
+          after(async () => {
+            try {
+              await generateRoofDesign(enquiry.id)
+            } catch (err) {
+              // generateRoofDesign handles its own errors; this is a backstop.
+              Sentry.captureException(err, { extra: { enquiryId: enquiry.id } })
+            }
+          })
+        }
+      } catch (err) {
+        Sentry.captureException(err, { extra: { enquiryId: enquiry.id } })
+      }
     }
 
     // Match installers
