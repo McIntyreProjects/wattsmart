@@ -3,6 +3,17 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { sendNewInstallerApplication } from '@/lib/email'
 import { rateLimit } from '@/lib/rateLimit'
 
+// Mirrors the client-side rule in InstallerRegisterForm: only certifications
+// that are MANDATORY for a selected product are required at registration.
+// Solar / battery / heat pumps → MCS. EV chargers → OZEV authorisation.
+// Consumer codes (RECC/HIES) and trade bodies are optional.
+const MANDATORY_CERTS: Record<string, { id: string; label: string }[]> = {
+  solar:    [{ id: 'mcs', label: 'MCS' }],
+  battery:  [{ id: 'mcs', label: 'MCS' }],
+  heatpump: [{ id: 'mcs', label: 'MCS' }],
+  ev:       [{ id: 'ozev', label: 'OZEV' }],
+}
+
 export async function POST(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
   if (!rateLimit(ip, 3, 60_000)) {
@@ -19,6 +30,21 @@ export async function POST(req: NextRequest) {
 
     if (!companyName || !contactName || !contactEmail || !contactPhone || !products?.length || !certifications || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Require only the mandatory certification(s) for the selected products
+    const missingCerts = new Set<string>()
+    for (const product of products as string[]) {
+      for (const cert of MANDATORY_CERTS[product] || []) {
+        const number = certifications?.[cert.id]?.number
+        if (typeof number !== 'string' || !number.trim()) missingCerts.add(cert.label)
+      }
+    }
+    if (missingCerts.size > 0) {
+      return NextResponse.json(
+        { error: `Missing required certification number(s): ${[...missingCerts].join(', ')}` },
+        { status: 400 }
+      )
     }
 
     const supabase = await createAdminClient()

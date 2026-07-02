@@ -40,36 +40,40 @@ type FormData = {
 const PRODUCTS = [
   { id: 'solar',    label: 'Solar panels',    certs: 'MCS certification required' },
   { id: 'battery',  label: 'Battery storage', certs: 'MCS certification required' },
-  { id: 'heatpump', label: 'Heat pumps',      certs: 'MCS + RECC required' },
-  { id: 'ev',       label: 'EV chargers',     certs: 'NICEIC/NAPIT + OZEV required' },
+  { id: 'heatpump', label: 'Heat pumps',      certs: 'MCS certification required' },
+  { id: 'ev',       label: 'EV chargers',     certs: 'OZEV authorisation required' },
 ]
 
+// Only the certifications that are legally/mandatorily required for a product
+// are marked required. Everything else (consumer codes, trade bodies) is
+// collected if offered, but optional at registration.
 const CERT_FIELDS: Record<string, { id: string; label: string; required: boolean }[]> = {
   solar:    [
     { id: 'mcs', label: 'MCS number', required: true },
-    { id: 'recc', label: 'RECC or HIES number', required: true },
+    { id: 'recc', label: 'RECC or HIES number', required: false },
     { id: 'trustmark', label: 'TrustMark number', required: false },
   ],
   battery:  [
     { id: 'mcs', label: 'MCS number', required: true },
-    { id: 'recc', label: 'RECC or HIES number', required: true },
+    { id: 'recc', label: 'RECC or HIES number', required: false },
   ],
   heatpump: [
     { id: 'mcs', label: 'MCS number', required: true },
-    { id: 'recc', label: 'RECC or HIES number', required: true },
+    { id: 'recc', label: 'RECC or HIES number', required: false },
   ],
   ev:       [
-    { id: 'niceic', label: 'NICEIC or NAPIT number', required: true },
     { id: 'ozev', label: 'OZEV authorisation number', required: true },
+    { id: 'niceic', label: 'NICEIC or NAPIT number', required: false },
   ],
 }
 
-function getRequiredCerts(products: string[]) {
-  const seen = new Set<string>()
+function getCertFields(products: string[]) {
   const fields: { id: string; label: string; required: boolean }[] = []
   for (const p of products) {
     for (const f of CERT_FIELDS[p] || []) {
-      if (!seen.has(f.id)) { seen.add(f.id); fields.push(f) }
+      const existing = fields.find(x => x.id === f.id)
+      if (!existing) fields.push({ ...f })
+      else if (f.required) existing.required = true
     }
   }
   return fields
@@ -171,8 +175,8 @@ const canProceed = () => {
     if (step === 0) return data.companyName && data.contactName && data.contactEmail && data.contactPhone
     if (step === 1) return data.products.length > 0
     if (step === 2) {
-      const required = getRequiredCerts(data.products).filter(f => f.required)
-      return required.every(f => data.certifications[f.id]?.number)
+      const required = getCertFields(data.products).filter(f => f.required)
+      return required.every(f => data.certifications[f.id]?.number?.trim())
     }
     if (step === 3) return data.coveragePostcodes.trim().length > 0
     if (step === 4) return !!(data.password && data.password.length >= 8 && data.password === data.passwordConfirm)
@@ -214,7 +218,7 @@ const canProceed = () => {
     )
   }
 
-  const certFields = getRequiredCerts(data.products)
+  const certFields = getCertFields(data.products)
 
   return (
     <div className="pt-8">
@@ -302,11 +306,12 @@ const canProceed = () => {
             <strong>Tip:</strong> uploading a copy of your certificate alongside your number helps us verify and approve your account quicker.
           </div>
 
-          {/* Required certs for selected products */}
-          {certFields.filter(f => f.required).map(f => (
+          {/* Certs for selected products — mandatory ones first, optional clearly marked */}
+          {[...certFields].sort((a, b) => Number(b.required) - Number(a.required)).map(f => (
             <CertField
               key={f.id}
               label={f.label}
+              optional={!f.required}
               value={data.certifications[f.id]?.number || ''}
               onChange={v => setCert(f.id, 'number', v)}
             />

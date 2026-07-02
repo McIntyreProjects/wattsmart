@@ -121,7 +121,9 @@ export function SmartForm() {
       ? data.preferredContact.filter(c => c !== id)
       : [...data.preferredContact, id])
 
-  const needsRoof = data.products.some(p => ['solar', 'battery'].includes(p))
+  // Roof type / orientation / shading only matter for solar panel installs —
+  // battery-only, heat pump and EV charger enquiries skip them entirely.
+  const needsRoof = data.products.includes('solar')
 
   const canProceed = () => {
     if (step === 0) return data.products.length > 0
@@ -152,7 +154,13 @@ export function SmartForm() {
       const res = await fetch('/api/enquiries/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, recommendation }),
+        body: JSON.stringify({
+          ...data,
+          // Roof questions are only shown for solar — never submit stale
+          // answers if solar was deselected after they were filled in.
+          ...(needsRoof ? {} : { roofType: '', roofOrientation: '', shading: '' }),
+          recommendation,
+        }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Something went wrong')
