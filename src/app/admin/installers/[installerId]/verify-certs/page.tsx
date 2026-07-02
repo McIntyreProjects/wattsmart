@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 import { useState } from 'react'
 
 const CERTS = [
@@ -79,7 +80,7 @@ export default function VerifyCertsPage() {
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <Logo />
         <div className="flex gap-6 text-sm text-ws-muted">
           <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
           <Link href="/admin/customers" className="hover:text-ws-ink">Customers</Link>

@@ -52,8 +52,8 @@ export default function SetNewPasswordPage() {
         </div>
 
         <div className="bg-white rounded-card border border-ws-border p-7">
-          <h1 className="font-display font-extrabold text-xl tracking-tight mb-0.5">Create a new password</h1>
-          <p className="text-sm text-ws-muted mb-6">Enter and confirm your new password below.</p>
+          <h1 className="font-display font-extrabold text-xl tracking-tight mb-0.5 text-center">Create a new password</h1>
+          <p className="text-sm text-ws-muted mb-6 text-center">Enter and confirm your new password below.</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>

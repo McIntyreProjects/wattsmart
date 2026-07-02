@@ -86,7 +86,7 @@ function LoginForm() {
   return (
     <>
       <form onSubmit={handleLogin} className="space-y-4">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1
             className="text-2xl font-bold text-ws-ink mb-1 font-display tracking-tight"
           >

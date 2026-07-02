@@ -7,10 +7,10 @@ export function Logo({ href = '/', className = '' }: { href?: string; className?
       <Image
         src="/logo-daylight.png"
         alt="WattSmart"
-        width={140}
-        height={36}
+        width={175}
+        height={45}
         priority
-        className="h-8 w-auto"
+        className="h-10 w-auto"
       />
     </Link>
   )

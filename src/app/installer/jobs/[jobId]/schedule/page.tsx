@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 import { use } from 'react'
 
 export default function InstallerSchedulePage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -28,7 +29,7 @@ export default function InstallerSchedulePage({ params }: { params: Promise<{ jo
   return (
     <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4 flex items-center gap-4">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <Logo />
         <Link href="/installer/dashboard" className="text-sm text-ws-muted hover:text-ws-body">← Dashboard</Link>
       </nav>
 

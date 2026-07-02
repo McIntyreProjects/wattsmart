@@ -24,19 +24,19 @@ function RefundConfirmedInner() {
       </nav>
 
       <main className="max-w-[420px] mx-auto px-5 py-10">
-        <div className="w-12 h-12 rounded-full bg-[#EAF5EE] flex items-center justify-center mb-5">
+        <div className="w-12 h-12 rounded-full bg-[#EAF5EE] flex items-center justify-center mb-5 mx-auto">
           <span className="text-ws-green text-xl font-bold">✓</span>
         </div>
-        <h1 className="font-display font-extrabold text-2xl tracking-tight mb-2">Your refund is confirmed</h1>
+        <h1 className="font-display font-extrabold text-2xl tracking-tight mb-2 text-center">Your refund is confirmed</h1>
         {hasDetails ? (
-          <p className="text-sm text-ws-muted leading-relaxed mb-6">
+          <p className="text-sm text-ws-muted leading-relaxed mb-6 text-center">
             {showFee
               ? `WattSmart has retained its 5% fee (£${feeAmount!.toFixed(2)}). Your refund of £${refundAmount!.toFixed(2)} will appear on your card within 3–5 working days.`
               : `Your full refund of £${refundAmount!.toFixed(2)} will appear on your card within 3–5 working days.`
             }
           </p>
         ) : (
-          <p className="text-sm text-ws-muted leading-relaxed mb-6">
+          <p className="text-sm text-ws-muted leading-relaxed mb-6 text-center">
             Your refund has been processed and will appear on your card within 3–5 working days.
           </p>
         )}

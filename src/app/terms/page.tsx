@@ -17,7 +17,7 @@ const sections = [
   },
   {
     title: '3 · Deposits',
-    body: "Your deposit is paid to your chosen installer at the time of payment, processed securely by WattSmart's payment provider (Stripe). WattSmart does not hold your funds. Your deposit is fully refundable within 14 days of payment; after 14 days, WattSmart's 5% fee is non-refundable.",
+    body: "Your deposit is paid to your chosen installer at the time of payment, processed securely by WattSmart's payment provider (Stripe). WattSmart does not hold your funds. When you pay, a 14-day cooling-off period begins. This is not a WattSmart offer — it's your statutory right under the Consumer Contracts Regulations 2013, which apply to distance contracts like the one between you and your installer. Cancel within those 14 days and your deposit is refunded in full; WattSmart facilitates the refund process on your behalf, but the right itself exists in law. After the cooling-off period ends, WattSmart's 5% fee is non-refundable. Nothing in these terms affects your statutory rights.",
   },
   {
     title: '4 · Payments',

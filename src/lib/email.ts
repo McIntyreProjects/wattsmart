@@ -103,7 +103,7 @@ export async function sendInstallerChosen(to: string, ref: string, portalUrl: st
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Great news — you've been chosen.</h2>
     <p>A customer has selected your quote for job <strong>${ref}</strong>.</p>
-    <p>The customer's deposit has been paid and your 95% share has been transferred to your Stripe account. Contact them within one working day to arrange a site survey.</p>
+    <p>The customer's deposit has been paid and your 95% share has been transferred to your Stripe account. Contact them within three working days to arrange a site survey.</p>
     <p style="margin:24px 0;">
       <a href="${portalUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View job details →</a>
     </p>
@@ -118,7 +118,7 @@ export async function sendDepositConfirmedCustomer(to: string, ref: string, amou
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Deposit confirmed.</h2>
     <p>Your deposit of <strong>${amount}</strong> for job <strong>${ref}</strong> has been paid securely to your installer through WattSmart.</p>
-    <p>Your installer will be in touch within one working day to arrange your site survey and confirm your installation date.</p>
+    <p>Your installer will be in touch within three working days to arrange your site survey and confirm your installation date.</p>
     `
   )
 }
@@ -130,7 +130,7 @@ export async function sendDepositConfirmedInstaller(to: string, ref: string) {
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Deposit received.</h2>
     <p>The customer has paid their deposit for job <strong>${ref}</strong>. Your 95% share has been transferred to your Stripe account.</p>
-    <p>Please contact the customer within one working day to arrange a site survey.</p>
+    <p>Please contact the customer within three working days to arrange a site survey.</p>
     `
   )
 }

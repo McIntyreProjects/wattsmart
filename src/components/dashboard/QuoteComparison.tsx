@@ -95,7 +95,7 @@ function DepositForm({
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
-        Processed securely by Stripe — full refund if you cancel within 14 days
+        Processed securely by Stripe — change your mind within 14 days for a full refund, your legal right under UK consumer law
       </div>
 
       <div className="mb-4">
@@ -193,7 +193,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
           <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             Here&apos;s who you&apos;ll be working with.
           </h1>
-          <p className="text-sm text-ws-muted">Your deposit is paid securely through WattSmart. Expect to hear from them within one working day.</p>
+          <p className="text-sm text-ws-muted">Your deposit is paid securely through WattSmart. Expect to hear from them within three working days.</p>
         </div>
 
         <Card className="mb-6">

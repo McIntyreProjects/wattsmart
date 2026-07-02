@@ -19,8 +19,8 @@ const PRODUCTS = [
 const HOW_IT_WORKS = [
   { n: '1', title: 'Tell us about your home',        body: 'A few quick questions — products, property, energy use.' },
   { n: '2', title: 'Get up to 3 anonymous quotes',   body: 'We ask up to 3 certified local installers to quote. You compare them side by side — names hidden.' },
-  { n: '3', title: 'Choose & pay securely',           body: 'Pick your favourite. Pay your deposit securely through WattSmart — full refund if you cancel within 14 days.' },
-  { n: '4', title: 'Meet your installer',             body: 'They call within one working day to book your survey.' },
+  { n: '3', title: 'Choose & pay securely',           body: 'Pick your preferred quote. Pay your deposit securely through WattSmart — change your mind within 14 days and you get a full refund, your legal right under UK consumer law.' },
+  { n: '4', title: 'Meet your installer',             body: 'They call within three working days to book your survey.' },
 ]
 
 const JSON_LD = {
@@ -70,7 +70,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <main className="max-w-content mx-auto px-5">
-        <section className="pt-10 pb-12">
+        <section className="pt-10 pb-12 text-center">
           <p className="eyebrow mb-4">Free · no spam · no pressure</p>
           <h1
             className="text-[38px] leading-[1.03] font-bold text-ws-ink mb-4 font-display tracking-tight"
@@ -89,7 +89,7 @@ export default function HomePage() {
           <p className="text-sm text-ws-muted mt-3">Free, no obligation · about 3 minutes</p>
 
           {/* Trust bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 text-left">
             {[
               { label: 'Certified', sub: 'every installer' },
               { label: 'Free to use', sub: 'getting quotes costs nothing' },
@@ -106,7 +106,7 @@ export default function HomePage() {
         {/* How it works */}
         <section id="how-it-works" className="py-10 border-t border-ws-border">
           <h2
-            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight"
+            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight text-center"
           >
             How it works
           </h2>
@@ -131,7 +131,7 @@ export default function HomePage() {
         {/* What we cover */}
         <section className="py-10 border-t border-ws-border">
           <h2
-            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight"
+            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight text-center"
           >
             What we cover
           </h2>
@@ -155,7 +155,7 @@ export default function HomePage() {
 
         {/* Reviews of WattSmart service */}
         <section className="py-10 border-t border-ws-border">
-          <p className="text-sm text-ws-muted mb-4">What homeowners say about us</p>
+          <p className="text-sm text-ws-muted mb-4 text-center">What homeowners say about us</p>
           <div className="bg-ws-card rounded-card border border-ws-border p-6 text-center">
             <p className="text-2xl mb-3">⭐</p>
             <p className="font-semibold text-ws-ink text-sm mb-1">We&apos;re new — no reviews yet</p>

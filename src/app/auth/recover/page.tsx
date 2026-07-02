@@ -16,8 +16,8 @@ export default function AdminRecoverPage() {
         <p className="text-xs text-ws-muted text-center mb-4 font-semibold uppercase tracking-wider">Owner console</p>
 
         <div className="bg-white rounded-card border border-ws-border p-7">
-          <h1 className="font-display font-extrabold text-xl tracking-tight mb-1">Owner account recovery</h1>
-          <p className="text-sm text-ws-muted mb-6">Recovering the owner account takes two steps — an email link plus a time-based code from your authenticator app.</p>
+          <h1 className="font-display font-extrabold text-xl tracking-tight mb-1 text-center">Owner account recovery</h1>
+          <p className="text-sm text-ws-muted mb-6 text-center">Recovering the owner account takes two steps — an email link plus a time-based code from your authenticator app.</p>
 
           <div className="flex gap-3 mb-6">
             {[1, 2].map(s => (

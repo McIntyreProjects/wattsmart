@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 export default function CertExpiringPage() {
   // This is rendered as a banner/overlay on the installer dashboard login
@@ -6,7 +7,7 @@ export default function CertExpiringPage() {
   return (
     <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <Logo />
       </nav>
 
       <div className="max-w-[560px] mx-auto px-5 py-8">

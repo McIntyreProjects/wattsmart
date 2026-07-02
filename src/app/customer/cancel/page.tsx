@@ -105,7 +105,7 @@ function CancelPageInner() {
           <div>
             <h1 className="font-display font-extrabold text-2xl tracking-tight mb-1">Cancel this booking?</h1>
             <p className="text-sm text-ws-muted leading-relaxed mb-6">
-              You&apos;re within your 14-day cooling-off period and your install isn&apos;t confirmed yet — so you get a full refund, no questions asked.
+              You&apos;re within your 14-day cooling-off period — your legal right under UK consumer law — and your install isn&apos;t confirmed yet, so you get a full refund, no questions asked.
             </p>
 
             <div className="border border-ws-border rounded-tile p-4 mb-5 bg-white">
@@ -159,7 +159,7 @@ function CancelPageInner() {
             </Link>
 
             <p className="text-xs text-ws-muted mt-4 leading-relaxed">
-              Full refund any time within 14 days of paying your deposit — your cooling-off period. After 14 days, WattSmart&apos;s 5% is non-refundable. Your statutory rights (Consumer Contracts Regs &amp; RECC) are never affected.
+              The 14-day cooling-off period is your legal right under the Consumer Contracts Regulations 2013 — it runs from the day you pay your deposit, and WattSmart handles the refund process for you. After it ends, WattSmart&apos;s 5% fee is non-refundable. Your other statutory rights (including under RECC) are never affected.
             </p>
           </div>
         ) : (

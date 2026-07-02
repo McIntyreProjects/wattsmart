@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 export default async function InstallerFeesPage() {
   const supabase = await createClient()
@@ -46,7 +47,7 @@ export default async function InstallerFeesPage() {
   return (
     <div className="min-h-screen bg-ws-bg">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <Logo />
         <div className="flex gap-6 text-sm text-ws-muted">
           <Link href="/installer/dashboard" className="hover:text-ws-ink">Dashboard</Link>
           <Link href="/installer/profile" className="hover:text-ws-ink">Profile</Link>

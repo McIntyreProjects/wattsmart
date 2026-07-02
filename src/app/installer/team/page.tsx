@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 type Role = 'manager' | 'member'
 type MemberStatus = 'active' | 'pending'
@@ -136,7 +137,7 @@ export default function InstallerTeamPage() {
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
+        <Logo />
         <div className="flex gap-6 text-sm text-ws-muted">
           <Link href="/installer/dashboard" className="hover:text-ws-ink">Dashboard</Link>
           <Link href="/installer/profile" className="hover:text-ws-ink">Profile</Link>

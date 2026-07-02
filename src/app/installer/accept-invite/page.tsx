@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 type InviteDetails = {
   email: string
@@ -91,8 +92,8 @@ function AcceptInviteContent() {
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <span className="font-display font-extrabold text-2xl tracking-tight">WattSmart</span>
+        <div className="mb-8 flex justify-center">
+          <Logo />
         </div>
 
         <div className="bg-white border border-ws-border rounded-tile p-5 mb-6">
