@@ -29,8 +29,8 @@ const config: Config = {
         'ws-red-bg':      '#FBEEEC', // error surface
       },
       fontFamily: {
-        display: ['Bricolage Grotesque', 'sans-serif'],
-        body:    ['Figtree', 'sans-serif'],
+        display: ['var(--font-bricolage)', 'sans-serif'],
+        body:    ['var(--font-figtree)', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['11px', '1.4'],

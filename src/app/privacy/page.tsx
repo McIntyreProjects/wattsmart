@@ -1,6 +1,10 @@
 import Link from 'next/link'
 
-export const metadata = { title: 'Privacy policy — WattSmart' }
+export const metadata = {
+  title: 'Privacy policy — WattSmart',
+  description:
+    'How WattSmart collects, uses and protects your data — including your anonymity with installers, your GDPR rights, and how long we keep your information.',
+}
 
 const sections = [
   {
