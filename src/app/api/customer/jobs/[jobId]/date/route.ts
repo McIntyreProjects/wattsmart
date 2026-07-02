@@ -50,7 +50,9 @@ export async function POST(
 
       const now = new Date().toISOString()
 
-      // Update job: mark date accepted, set confirmed_date = proposed_date, update status
+      // Update job: mark date accepted, set confirmed_date = proposed_date,
+      // update status ('install_scheduled' added to the jobs status check
+      // constraint in migration 010)
       const { error: jobErr } = await admin
         .from('jobs')
         .update({

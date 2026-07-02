@@ -20,13 +20,16 @@ export default async function NoQuotesPage() {
         <div className="bg-[#F1FAF5] border border-[#CDE6D7] rounded-tile p-4 mt-4">
           <p className="font-bold text-sm text-ws-dark-green">We'll widen the net for you</p>
           <p className="text-sm text-[#22302A] mt-1 leading-relaxed">
-            Send the same enquiry to <strong>three new certified installers</strong> — nothing to fill in again. We'll also stretch your area a little to find more.
+            Get in touch and we'll send the same enquiry to <strong>new certified installers</strong> — nothing to fill in again. We'll also stretch your area a little to find more.
           </p>
         </div>
 
-        <button className="w-full bg-ws-green text-white rounded-btn py-4 font-bold text-base mt-4 hover:bg-ws-dark-green transition-colors">
-          Send to 3 new installers →
-        </button>
+        <Link
+          href="/contact"
+          className="block w-full text-center bg-ws-green text-white rounded-btn py-4 font-bold text-base mt-4 hover:bg-ws-dark-green transition-colors"
+        >
+          Ask us to widen the search →
+        </Link>
         <Link href={`/get-quotes`} className="block text-center text-sm text-ws-dark-green font-semibold mt-3">
           Tweak my enquiry first
         </Link>

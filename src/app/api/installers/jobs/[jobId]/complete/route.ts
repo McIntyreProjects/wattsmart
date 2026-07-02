@@ -48,7 +48,8 @@ export async function POST(
     if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
     if (job.installer_id !== installerId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    // Mark job as install_complete
+    // Mark job as install_complete ('install_complete' added to the jobs
+    // status check constraint in migration 010)
     const { error: jobUpdateError } = await admin
       .from('jobs')
       .update({ status: 'install_complete' })

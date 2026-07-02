@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
-import { sendEnquiryConfirmation, sendNewInstallerApplication } from '@/lib/email'
+import { sendEnquiryConfirmation, sendAdminAlert } from '@/lib/email'
 import { isLaunchPostcode, getPostcodeArea } from '@/lib/utils'
 import { rateLimit } from '@/lib/rateLimit'
 import * as Sentry from '@sentry/nextjs'
@@ -53,10 +53,23 @@ export async function POST(req: NextRequest) {
     let userId: string
 
     if (authError && authError.message.includes('already been registered')) {
-      const { data: listData, error: lookupError } = await supabase.auth.admin.listUsers()
-      const found = listData?.users.find(u => u.email === email)
-      if (!found || lookupError) throw new Error('User lookup failed')
-      userId = found.id
+      // Supabase JS v2 has no getUserByEmail, and listUsers() defaults to 50
+      // per page — paginate until the user is found or pages are exhausted.
+      const targetEmail = String(email).toLowerCase()
+      const perPage = 1000
+      let foundId: string | null = null
+      for (let page = 1; ; page++) {
+        const { data: listData, error: lookupError } = await supabase.auth.admin.listUsers({ page, perPage })
+        if (lookupError) throw new Error('User lookup failed')
+        const found = listData?.users.find(u => u.email?.toLowerCase() === targetEmail)
+        if (found) {
+          foundId = found.id
+          break
+        }
+        if (!listData || listData.users.length < perPage) break
+      }
+      if (!foundId) throw new Error('User lookup failed')
+      userId = foundId
     } else if (authError) {
       throw authError
     } else {
@@ -211,12 +224,16 @@ export async function POST(req: NextRequest) {
     }
 
     if (matched.length === 0) {
-      const adminEmail = process.env.ADMIN_EMAIL
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_FROM
       if (adminEmail) {
-        await sendNewInstallerApplication(
+        await sendAdminAlert(
           adminEmail,
-          `No installers matched for enquiry ${enquiry.reference} (${postcodeArea})`,
-          `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/admin`
+          `No installers matched — enquiry ${enquiry.reference} (${postcodeArea})`,
+          `
+          <p>Enquiry <strong>${enquiry.reference}</strong> (postcode area <strong>${postcodeArea}</strong>) matched zero active installers, so no job briefs were sent.</p>
+          <p>Please review coverage and match installers manually.</p>
+          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/admin" style="color:#1B3A2D;">Open admin dashboard →</a></p>
+          `
         ).catch(console.error)
       }
     }

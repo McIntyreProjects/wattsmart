@@ -210,6 +210,36 @@ export async function sendFeeInvoice(
   )
 }
 
+export async function sendNoQuotesYet(to: string, ref: string, dashboardUrl: string) {
+  await send(
+    to,
+    "We're still working on your quotes",
+    `
+    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">We're still on it.</h2>
+    <p>We're sorry — the installers we first matched to your enquiry <strong>${ref}</strong> haven't been able to quote yet. Sometimes they're at capacity or just outside your area.</p>
+    <p>We're now widening the search to more certified installers near you. There's nothing you need to do, and you haven't paid anything.</p>
+    <p style="margin:24px 0;">
+      <a href="${dashboardUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View your enquiry →</a>
+    </p>
+    <p style="font-size:13px;color:#6B7E74;">If you'd rather not wait, reply to hello@wattsmart.co.uk and we'll help directly.</p>
+    `
+  )
+}
+
+// Generic admin alert — used for operational notices (no installers matched,
+// zero quotes after deadline, Stripe disputes). Keeps subjects distinct
+// instead of reusing customer/installer-facing templates.
+export async function sendAdminAlert(adminEmail: string, subject: string, bodyHtml: string) {
+  await send(
+    adminEmail,
+    subject,
+    `
+    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Admin alert.</h2>
+    ${bodyHtml}
+    `
+  )
+}
+
 export async function sendNewInstallerApplication(adminEmail: string, companyName: string, adminUrl: string) {
   await send(
     adminEmail,

@@ -44,10 +44,12 @@ export async function updateSession(request: NextRequest) {
     if (role && role !== 'installer') return NextResponse.redirect(loginUrl)
   }
 
-  // Protected admin routes — must be authenticated with role 'admin'
+  // Protected admin routes — must be authenticated with role 'admin'.
+  // Uses app_metadata (server-controlled, only settable via the service role)
+  // rather than user_metadata, which any user can write to themselves.
   if (path.startsWith('/admin')) {
     if (!user) return NextResponse.redirect(new URL('/auth/login?type=admin', request.url))
-    if (role !== 'admin') return NextResponse.redirect(loginUrl)
+    if (user.app_metadata?.role !== 'admin') return NextResponse.redirect(loginUrl)
   }
 
   return supabaseResponse

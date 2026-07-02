@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
-import { sendDepositConfirmedCustomer, sendDepositConfirmedInstaller, sendInstallerChosen } from '@/lib/email'
-import { formatCurrency } from '@/lib/utils'
+import { claimAndSendDepositEmails } from '@/lib/depositEmails'
 
 // Called by the customer after Stripe confirms payment client-side.
 // Verifies the payment intent succeeded, marks it held, and reveals the installer.
@@ -45,40 +44,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Idempotent — only update if not already held
+    // Idempotent — only update if not already held (the Stripe webhook may
+    // have got there first)
     if (payment.status !== 'held') {
       await admin.from('payments').update({ status: 'held', paid_at: new Date().toISOString() }).eq('id', payment.id)
       await admin.from('enquiries').update({ status: 'deposit_paid' }).eq('id', payment.enquiry_id)
-
-      const { data: installer } = await admin
-        .from('installers')
-        .select('contact_email')
-        .eq('id', payment.installer_id)
-        .single()
-
-      const { data: job } = await admin
-        .from('jobs')
-        .select('id')
-        .eq('enquiry_id', payment.enquiry_id)
-        .eq('installer_id', payment.installer_id)
-        .single()
-
-      const { data: { user: custUser } } = await admin.auth.admin.getUserById(user.id)
-      const ref = enquiry.reference
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'
-
-      if (custUser?.email) {
-        await sendDepositConfirmedCustomer(custUser.email, ref, formatCurrency(payment.amount)).catch(console.error)
-      }
-      if (installer?.contact_email) {
-        await sendInstallerChosen(
-          installer.contact_email,
-          ref,
-          `${siteUrl}/installer/jobs/${job?.id}`
-        ).catch(console.error)
-        await sendDepositConfirmedInstaller(installer.contact_email, ref).catch(console.error)
-      }
     }
+
+    // Send confirmation emails exactly once, regardless of whether this route
+    // or the webhook confirmed the payment — claimAndSendDepositEmails claims
+    // the send atomically via payments.emails_sent_at.
+    await claimAndSendDepositEmails(admin, payment.id)
 
     // Reveal installer — only after confirmed payment
     const { data: installer } = await admin

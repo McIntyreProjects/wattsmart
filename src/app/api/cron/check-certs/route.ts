@@ -2,8 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendCertExpiring } from '@/lib/email'
 
+// Vercel invokes crons with GET and `Authorization: Bearer $CRON_SECRET`.
+// POST + x-cron-secret is kept for manual/backward-compatible invocation.
+function isAuthorised(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  if (req.headers.get('authorization') === `Bearer ${secret}`) return true
+  if (req.headers.get('x-cron-secret') === secret) return true
+  return false
+}
+
+export async function GET(req: NextRequest) {
+  return handle(req)
+}
+
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-cron-secret') !== process.env.CRON_SECRET) {
+  return handle(req)
+}
+
+async function handle(req: NextRequest) {
+  if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   try {

@@ -1,9 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase/server'
-import { sendQuotesReady } from '@/lib/email'
+import { sendQuotesReady, sendNoQuotesYet, sendAdminAlert } from '@/lib/email'
+
+// Vercel invokes crons with GET and `Authorization: Bearer $CRON_SECRET`.
+// POST + x-cron-secret is kept for manual/backward-compatible invocation.
+function isAuthorised(req: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  if (req.headers.get('authorization') === `Bearer ${secret}`) return true
+  if (req.headers.get('x-cron-secret') === secret) return true
+  return false
+}
+
+export async function GET(req: NextRequest) {
+  return handle(req)
+}
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get('x-cron-secret') !== process.env.CRON_SECRET) {
+  return handle(req)
+}
+
+async function handle(req: NextRequest) {
+  if (!isAuthorised(req)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
   try {
@@ -78,21 +97,32 @@ export async function POST(req: NextRequest) {
     // -----------------------------------------------------------------------
     const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
 
-    const { data: stalledEnquiries } = await admin
+    const { data: stalledEnquiries, error: stalledError } = await admin
       .from('enquiries')
       .select(`
         id,
         reference,
         created_at,
         customers (
-          user_id,
-          profiles:user_id ( email )
+          user_id
         )
       `)
       .eq('status', 'quotes_requested')
       .lt('created_at', fiveDaysAgo)
 
+    if (stalledError) {
+      Sentry.captureException(new Error(`quote-deadlines stalled-enquiries query failed: ${stalledError.message}`))
+      console.error('Stalled enquiries query error:', stalledError)
+    }
+
     let transitioned = 0
+    let noQuoteNotified = 0
+
+    // Only notify zero-quote customers once: the cron runs daily, so an
+    // enquiry aged between 5 and 6 days is in the notification window exactly
+    // one run.
+    const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'
 
     for (const enq of stalledEnquiries || []) {
       // Check if there's at least 1 submitted quote
@@ -102,7 +132,41 @@ export async function POST(req: NextRequest) {
         .eq('enquiry_id', enq.id)
         .eq('status', 'submitted')
 
-      if (!qCount || qCount < 1) continue
+      if (!qCount || qCount < 1) {
+        // Zero quotes after 5 days — tell the customer honestly and alert
+        // admin so the search can be widened manually. No status change:
+        // the enquiry stays in quotes_requested so late quotes still land.
+        if (enq.created_at >= sixDaysAgo) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const customer = (enq.customers as any) as { user_id: string } | null
+            if (customer?.user_id) {
+              const { data: authUser } = await admin.auth.admin.getUserById(customer.user_id)
+              if (authUser?.user?.email) {
+                await sendNoQuotesYet(authUser.user.email, enq.reference, `${siteUrl}/customer/dashboard`).catch(console.error)
+              }
+            }
+          } catch (emailErr) {
+            console.error('Failed to send no-quotes email for enquiry', enq.id, emailErr)
+          }
+
+          const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_FROM
+          if (adminEmail) {
+            await sendAdminAlert(
+              adminEmail,
+              `Zero quotes after 5 days — enquiry ${enq.reference}`,
+              `
+              <p>Enquiry <strong>${enq.reference}</strong> has had no quotes submitted 5 days after matching.</p>
+              <p>The customer has been emailed that we're widening the search. Please review the enquiry and match more installers manually.</p>
+              <p><a href="${siteUrl}/admin" style="color:#1B3A2D;">Open admin dashboard →</a></p>
+              `
+            ).catch(console.error)
+          }
+
+          noQuoteNotified++
+        }
+        continue
+      }
 
       // Transition to quotes_received
       await admin
@@ -120,7 +184,6 @@ export async function POST(req: NextRequest) {
         if (customer?.user_id) {
           const { data: authUser } = await admin.auth.admin.getUserById(customer.user_id)
           if (authUser?.user?.email) {
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'
             const loginUrl = `${siteUrl}/auth/login`
             await sendQuotesReady(authUser.user.email, enq.reference, loginUrl).catch(console.error)
           }
@@ -130,7 +193,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, reassigned, transitioned })
+    return NextResponse.json({ ok: true, reassigned, transitioned, noQuoteNotified })
   } catch (err) {
     console.error('Quote deadline cron error:', err)
     return NextResponse.json({ error: 'Deadline check failed' }, { status: 500 })

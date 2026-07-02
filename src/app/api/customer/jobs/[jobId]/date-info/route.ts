@@ -42,12 +42,17 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch deposit payment
+    // Fetch deposit payment — valid payment statuses are
+    // pending/held/released/refunded (001_initial_schema.sql); a paid deposit
+    // is 'held' then 'released'. ('captured' matched nothing.)
     const { data: payment } = await admin
       .from('payments')
       .select('amount')
       .eq('enquiry_id', enquiry.id)
-      .eq('status', 'captured')
+      .eq('type', 'deposit')
+      .in('status', ['held', 'released'])
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
     return NextResponse.json({
