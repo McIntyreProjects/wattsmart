@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getPostcodeDistrict } from '@/lib/utils'
 
 export async function GET() {
   try {
@@ -40,7 +41,8 @@ export async function GET() {
         ? {
             reference: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).reference,
             products: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).products,
-            postcode_area: (((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).postcode as string)?.split(' ')[0]?.replace(/\d+$/, '') || '',
+            // District-level only (e.g. "NE1") — never the full postcode
+            postcode_area: getPostcodeDistrict((((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).postcode as string) || ''),
             property_type: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).property_type,
             property_age: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).property_age,
             monthly_elec_kwh: ((Array.isArray(j.enquiries) ? j.enquiries[0] : j.enquiries) as Record<string, unknown>).monthly_elec_kwh,

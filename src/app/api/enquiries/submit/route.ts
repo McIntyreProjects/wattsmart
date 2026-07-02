@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { sendEnquiryConfirmation, sendNewInstallerApplication } from '@/lib/email'
 import { isLaunchPostcode, getPostcodeArea } from '@/lib/utils'
 import { rateLimit } from '@/lib/rateLimit'
+import * as Sentry from '@sentry/nextjs'
 
 export async function POST(req: NextRequest) {
   const ip = (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0].trim()
@@ -13,7 +14,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      products, postcode, propertyType, propertyAge, ownership,
+      products, postcode, addressLine1, addressLine2, city,
+      propertyType, propertyAge, ownership,
       roofType, roofOrientation, shading,
       monthlyKwh, monthlyBill, electricitySupplier,
       goal, notes, firstName, lastName, email, phone, preferredContact,
@@ -22,6 +24,14 @@ export async function POST(req: NextRequest) {
 
     if (!products?.length || !postcode || !propertyType || !propertyAge || !ownership || !goal || !firstName || !lastName || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    if (typeof addressLine1 !== 'string' || !addressLine1.trim() || addressLine1.trim().length > 200) {
+      return NextResponse.json({ error: 'Please provide the first line of your address' }, { status: 400 })
+    }
+    if ((addressLine2 && (typeof addressLine2 !== 'string' || addressLine2.length > 200)) ||
+        (city && (typeof city !== 'string' || city.length > 100))) {
+      return NextResponse.json({ error: 'Address details are too long' }, { status: 400 })
     }
 
     if (!isLaunchPostcode(postcode)) {
@@ -92,6 +102,46 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (enqError) throw enqError
+
+    // Store the full address in the PII-isolated enquiry_addresses table.
+    // Installers have no RLS policy on this table and must never see it —
+    // they only get the postcode district via the API layer.
+    // Geocode via postcodes.io (free, UK-specific, no key needed) as a
+    // postcode-centroid baseline for the roof-layout feature.
+    // TODO Phase 1b: rooftop-precision geocoding (Google Geocoding API)
+    let lat: number | null = null
+    let lng: number | null = null
+    try {
+      const geo = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode.trim())}`)
+      const geoJson = await geo.json()
+      if (geoJson.status === 200) {
+        lat = geoJson.result.latitude
+        lng = geoJson.result.longitude
+      }
+    } catch {
+      // Non-fatal — store null lat/lng; Phase 1b can backfill
+    }
+
+    const { error: addrError } = await supabase
+      .from('enquiry_addresses')
+      .insert({
+        enquiry_id: enquiry.id,
+        address_line1: addressLine1.trim(),
+        address_line2: addressLine2?.trim() || null,
+        city: city?.trim() || null,
+        postcode: postcode.trim().toUpperCase(),
+        lat,
+        lng,
+      })
+
+    if (addrError) {
+      // Don't fail the enquiry — the address powers a later-phase feature.
+      // Capture so it can be backfilled from the raw enquiry if needed.
+      console.error('enquiry_addresses insert failed:', addrError)
+      Sentry.captureException(new Error(`enquiry_addresses insert failed: ${addrError.message}`), {
+        extra: { enquiryId: enquiry.id, reference: enquiry.reference },
+      })
+    }
 
     // Match installers
     const postcodeArea = getPostcodeArea(postcode)

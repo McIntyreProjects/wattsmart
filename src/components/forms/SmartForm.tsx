@@ -11,7 +11,8 @@ const STEPS = 6
 
 type FormData = {
   products: string[]
-  postcode: string; propertyType: string; propertyAge: string; ownership: string
+  postcode: string; addressLine1: string; addressLine2: string; city: string
+  propertyType: string; propertyAge: string; ownership: string
   roofType: string; roofOrientation: string; shading: string
   monthlyKwh: string; monthlyBill: string; electricitySupplier: string
   goal: 'cover' | 'export' | ''
@@ -20,7 +21,8 @@ type FormData = {
 }
 
 const initial: FormData = {
-  products: [], postcode: '', propertyType: '', propertyAge: '', ownership: '',
+  products: [], postcode: '', addressLine1: '', addressLine2: '', city: '',
+  propertyType: '', propertyAge: '', ownership: '',
   roofType: '', roofOrientation: '', shading: '',
   monthlyKwh: '', monthlyBill: '', electricitySupplier: '',
   goal: '', firstName: '', lastName: '', email: '', phone: '',
@@ -123,7 +125,7 @@ export function SmartForm() {
 
   const canProceed = () => {
     if (step === 0) return data.products.length > 0
-    if (step === 1) return !!(data.postcode && data.propertyType && data.propertyAge && data.ownership)
+    if (step === 1) return !!(data.postcode && data.addressLine1.trim() && data.propertyType && data.propertyAge && data.ownership)
     if (step === 2) return !!(data.monthlyKwh && data.monthlyBill)
     if (step === 3) return data.goal !== ''
     if (step === 4) return !!(data.firstName && data.lastName && data.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
@@ -239,6 +241,21 @@ export function SmartForm() {
             <FieldLabel>Postcode</FieldLabel>
             <Input value={data.postcode} onChange={v => set('postcode', v.toUpperCase())} placeholder="e.g. NE1 4ST" />
           </div>
+          <div>
+            <FieldLabel>First line of your address</FieldLabel>
+            <Input value={data.addressLine1} onChange={v => set('addressLine1', v)} placeholder="e.g. 12 Acacia Avenue" />
+          </div>
+          <div>
+            <FieldLabel>Address line 2 <span className="text-ws-muted font-normal">(optional)</span></FieldLabel>
+            <Input value={data.addressLine2} onChange={v => set('addressLine2', v)} />
+          </div>
+          <div>
+            <FieldLabel>Town / city <span className="text-ws-muted font-normal">(optional)</span></FieldLabel>
+            <Input value={data.city} onChange={v => set('city', v)} placeholder="e.g. Newcastle upon Tyne" />
+          </div>
+          <p className="text-xs text-ws-muted">
+            Installers only see your general area — never your address — until you accept a quote.
+          </p>
           <div>
             <FieldLabel>Property type</FieldLabel>
             <Select value={data.propertyType} onChange={v => set('propertyType', v)} placeholder="Select…"

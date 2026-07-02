@@ -20,6 +20,16 @@ export function getPostcodeArea(postcode: string): string {
   return postcode.trim().toUpperCase().split(' ')[0].replace(/\d+$/, '')
 }
 
+// Outward code (district), e.g. "NE1" from "NE1 4XD". The most granular
+// location installers are allowed to see before a quote is accepted.
+export function getPostcodeDistrict(postcode: string): string {
+  const cleaned = postcode.trim().toUpperCase()
+  if (cleaned.includes(' ')) return cleaned.split(/\s+/)[0]
+  // No space (e.g. "NE14XD"): the inward code is always digit + 2 letters
+  const match = cleaned.match(/^(.+?)\d[A-Z]{2}$/)
+  return match ? match[1] : cleaned
+}
+
 export const LAUNCH_POSTCODES = ['NE', 'DH', 'SR', 'TS', 'YO', 'HG', 'HX', 'HD', 'BD', 'LS', 'WF', 'DN', 'S']
 
 export function isLaunchPostcode(postcode: string): boolean {
