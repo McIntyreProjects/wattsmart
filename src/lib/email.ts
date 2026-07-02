@@ -146,6 +146,19 @@ export async function sendDepositReleased(to: string, ref: string, amount: strin
   )
 }
 
+export async function sendJobCancelledInstaller(to: string, ref: string) {
+  await send(
+    to,
+    `Job ${ref} has been cancelled`,
+    `
+    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Job cancelled.</h2>
+    <p>The customer has cancelled job <strong>${ref}</strong> and their deposit has been refunded.</p>
+    <p>Any deposit share previously transferred to your Stripe account has been reversed as part of the refund. No action is needed from you.</p>
+    <p>If you have any questions, contact hello@wattsmart.co.uk.</p>
+    `
+  )
+}
+
 export async function sendFeeInvoice(
   to: string,
   ref: string,

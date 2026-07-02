@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { sendFeeInvoice } from '@/lib/email'
 import { formatCurrency } from '@/lib/utils'
+import * as Sentry from '@sentry/nextjs'
 
 const MIN_FEE_PENCE = 7500 // £75 floor
 
@@ -46,26 +47,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ invoiceId: existingInvoice?.id })
     }
 
+    // finalAmount arrives in POUNDS from the installer form — convert to pence once here
     const amountPence = Math.round(parseFloat(finalAmount) * 100)
 
-    // Look up the deposit payment already collected for this enquiry
+    // Look up the deposit payment already collected for this enquiry.
+    // Only count deposits whose fee was actually taken (paid via Stripe): 'held' or 'released'.
+    // Valid payment statuses are: pending, held, released, refunded (001_initial_schema.sql).
     const { data: depositPayment } = await admin
       .from('payments')
       .select('amount, wattsmart_fee')
       .eq('enquiry_id', enquiryId)
       .eq('type', 'deposit')
-      .in('status', ['held', 'confirmed', 'released', 'pending'])
+      .in('status', ['held', 'released'])
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     const depositFeePence = depositPayment?.wattsmart_fee ?? 0
 
-    // Correct fee formula: max(5% of final amount, £75 floor), minus deposit fee already collected
+    // Fee formula (all pence): total_fee = max(5% of final job value, £75 floor);
+    // invoice the remainder after the deposit fee already collected at source.
     const totalFeePence = Math.max(Math.round(amountPence * 0.05), MIN_FEE_PENCE)
     const invoiceAmountPence = Math.max(totalFeePence - depositFeePence, 0)
 
-    const { data: payment } = await admin
+    const { data: payment, error: paymentError } = await admin
       .from('payments')
       .insert({
         enquiry_id: enquiryId,
@@ -80,9 +85,13 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
+    if (paymentError || !payment) {
+      throw new Error(`Final payment insert failed: ${paymentError?.message ?? 'no row returned'}`)
+    }
+
     // Create fee invoice for the remaining amount due (total fee minus deposit fee collected)
     const dueAt = new Date(Date.now() + 30 * 86400000).toISOString()
-    const { data: invoice } = await admin
+    const { data: invoice, error: invoiceError } = await admin
       .from('fee_invoices')
       .insert({
         payment_id: payment.id,
@@ -93,6 +102,10 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single()
+
+    if (invoiceError || !invoice) {
+      throw new Error(`Fee invoice insert failed: ${invoiceError?.message ?? 'no row returned'}`)
+    }
 
     const { data: enquiry } = await admin
       .from('enquiries')
@@ -117,6 +130,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ invoiceId: invoice.id })
   } catch (err) {
     console.error('Report final payment error:', err)
+    Sentry.captureException(err)
     return NextResponse.json({ error: 'Failed to report payment' }, { status: 500 })
   }
 }

@@ -8,8 +8,9 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-function formatGBP(amount: number) {
-  return '£' + amount.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+// All amounts from the API are in integer PENCE — convert to pounds for display
+function formatGBP(pence: number) {
+  return '£' + (pence / 100).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function BalanceForm({

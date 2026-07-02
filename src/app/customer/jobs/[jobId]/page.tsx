@@ -23,7 +23,6 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
         id,
         reference,
         products,
-        total_price,
         status,
         created_at,
         customers ( user_id )
@@ -46,7 +45,6 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
     id: string
     reference: string
     products: string[]
-    total_price: number | null
     status: string
     created_at: string
     customers: { user_id: string }
@@ -86,16 +84,30 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
     ? (installer.trading_name || installer.company_name)
     : 'Your installer'
 
-  // Fetch payment for this enquiry
+  // Total job value comes from the SELECTED quote (stored in pence) —
+  // enquiries has no total_price column
+  const { data: selectedQuote } = await admin
+    .from('quotes')
+    .select('total_price')
+    .eq('enquiry_id', enquiry.id)
+    .eq('status', 'selected')
+    .maybeSingle()
+
+  // Fetch the deposit payment for this enquiry — successful payments are
+  // stored with status 'held' (then 'released'), not 'captured'
   const { data: payment } = await admin
     .from('payments')
     .select('id, amount, status, paid_at')
     .eq('enquiry_id', enquiry.id)
-    .eq('status', 'captured')
+    .eq('type', 'deposit')
+    .in('status', ['held', 'released'])
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
+  // All amounts in pence
   const depositAmount = payment?.amount ?? null
-  const totalPrice = enquiry.total_price ?? null
+  const totalPrice = selectedQuote?.total_price ?? null
   const balance = (totalPrice !== null && depositAmount !== null)
     ? totalPrice - depositAmount
     : null
@@ -121,7 +133,7 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
             <div className="text-right">
               <p className="text-xs text-ws-subtle">Total</p>
               <p className="font-display font-extrabold text-lg text-ws-dark-green">
-                £{totalPrice.toLocaleString('en-GB')}
+                £{(totalPrice / 100).toLocaleString('en-GB')}
               </p>
             </div>
           )}
@@ -142,7 +154,7 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
             <div className="pb-5">
               <p className={`font-bold text-sm ${step1Done ? '' : 'text-ws-subtle'}`}>Deposit paid</p>
               <p className="text-xs text-ws-subtle mt-0.5">
-                {step1Done ? (depositAmount !== null ? `£${depositAmount.toLocaleString('en-GB')} paid securely through WattSmart` : 'Deposit paid securely through WattSmart') : 'Pay deposit to get started'}
+                {step1Done ? (depositAmount !== null ? `£${(depositAmount / 100).toLocaleString('en-GB')} paid securely through WattSmart` : 'Deposit paid securely through WattSmart') : 'Pay deposit to get started'}
               </p>
             </div>
           </div>
@@ -194,10 +206,10 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
                     <div className="border-2 border-ws-green bg-[#F1FAF5] rounded-tile p-3 mt-2">
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs text-ws-muted">Balance</span>
-                        <span className="font-display font-extrabold text-xl">£{balance.toLocaleString('en-GB')}</span>
+                        <span className="font-display font-extrabold text-xl">£{(balance / 100).toLocaleString('en-GB')}</span>
                       </div>
                       {depositAmount !== null && (
-                        <p className="text-xs text-ws-dark-green mt-1">Deposit paid: £{depositAmount.toLocaleString('en-GB')}</p>
+                        <p className="text-xs text-ws-dark-green mt-1">Deposit paid: £{(depositAmount / 100).toLocaleString('en-GB')}</p>
                       )}
                       <Link
                         href={`/customer/jobs/${jobId}/balance`}
