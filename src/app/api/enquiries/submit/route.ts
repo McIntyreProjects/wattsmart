@@ -227,6 +227,7 @@ export async function POST(req: NextRequest) {
             <tr><td style="padding:6px 0;color:#6B7E74;font-size:13px;">Property</td><td style="padding:6px 0;font-size:13px;">${propertyType}, ${propertyAge}</td></tr>
             <tr><td style="padding:6px 0;color:#6B7E74;font-size:13px;">Monthly usage</td><td style="padding:6px 0;font-size:13px;">${monthlyKwh} kWh</td></tr>
             <tr><td style="padding:6px 0;color:#6B7E74;font-size:13px;">Goal</td><td style="padding:6px 0;font-size:13px;">${goal === 'export' ? 'Cover and earn (export)' : 'Cover what I use'}</td></tr>
+            <tr><td style="padding:6px 0;color:#6B7E74;font-size:13px;">Roof analysis</td><td style="padding:6px 0;font-size:13px;">View in your portal — we generate a satellite roof layout for most properties.</td></tr>
           </table>
           <p style="margin-top:16px;"><a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://wattsmart.co.uk'}/installer/jobs/${job.id}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 24px;display:inline-block;font-family:Inter,sans-serif;font-weight:500;">Submit your quote →</a></p>
           <p style="font-size:12px;color:#6B7E74;margin-top:12px;">Quote deadline: ${new Date(Date.now() + 5 * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>

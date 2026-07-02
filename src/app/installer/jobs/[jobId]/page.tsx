@@ -1,10 +1,26 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { QuoteSubmitForm } from '@/components/forms/QuoteSubmitForm'
 import { JobCompleteForm } from '@/components/forms/JobCompleteForm'
 import { Logo } from '@/components/ui/Logo'
 import { ProductTag } from '@/components/ui/Badge'
+import { azimuthToCompass } from '@/lib/utils'
 import Link from 'next/link'
+
+type RoofSegment = {
+  azimuth_degrees: number | null
+  pitch_degrees: number | null
+  area_m2: number | null
+  panels_count: number | null
+}
+
+function segmentLabel(s: RoofSegment): string {
+  return [
+    s.azimuth_degrees != null ? `${azimuthToCompass(s.azimuth_degrees)}-facing` : null,
+    s.pitch_degrees != null ? `${Math.round(s.pitch_degrees)}° pitch` : null,
+    s.panels_count != null ? `${s.panels_count} ${s.panels_count === 1 ? 'panel' : 'panels'}` : null,
+  ].filter(Boolean).join(' · ')
+}
 
 export default async function JobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params
@@ -38,6 +54,29 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
     monthly_elec_kwh: number; monthly_bill: number; goal: string;
     recommended_panels?: number; recommended_system_kwp?: number; recommended_battery_kwh?: number;
   } | null
+
+  // Roof-layout Phase 1c: fetch the roof design via the installer's own
+  // session client — RLS ("installers_assigned_roof_designs") only returns a
+  // row for enquiries this installer has a job on. The table holds no address
+  // or coordinate data, so everything in it is safe to show installers.
+  const { data: design } = await supabase
+    .from('roof_designs')
+    .select('status, panel_count, system_kwp, est_annual_kwh, roof_segments, image_path')
+    .eq('enquiry_id', job.enquiry_id)
+    .maybeSingle()
+
+  // Signed URL (5 min) issued only after the RLS-backed ownership check above.
+  let designImageUrl: string | null = null
+  if (design?.status === 'ready' && design.image_path) {
+    const admin = await createAdminClient()
+    const { data: signed } = await admin.storage
+      .from('roof-designs')
+      .createSignedUrl(design.image_path, 300)
+    designImageUrl = signed?.signedUrl ?? null
+  }
+  const roofSegments: RoofSegment[] = Array.isArray(design?.roof_segments)
+    ? (design.roof_segments as RoofSegment[])
+    : []
 
   const deadline = new Date(job.quote_deadline_at)
   const deadlinePast = deadline < new Date()
@@ -79,6 +118,55 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
               WattSmart recommendation: {enq.recommended_panels} panels · {enq.recommended_system_kwp} kWp
               {enq.recommended_battery_kwh ? ` · ${enq.recommended_battery_kwh} kWh battery` : ''}
             </div>
+          )}
+        </div>
+
+        <div className="bg-ws-card rounded-card border border-ws-border p-5 mb-6">
+          <h2 className="font-semibold text-ws-ink mb-4">Proposed roof layout</h2>
+          {design?.status === 'ready' ? (
+            <>
+              {designImageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL; next/image caching would outlive it
+                <img
+                  src={designImageUrl}
+                  alt="Satellite view of the roof with the proposed panel layout"
+                  className="w-full max-w-md rounded-card border border-ws-border mb-4"
+                />
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
+                {design.panel_count != null && (
+                  <div><span className="text-ws-muted">Panels: </span><span className="text-ws-body">{design.panel_count}</span></div>
+                )}
+                {design.system_kwp != null && (
+                  <div><span className="text-ws-muted">System: </span><span className="text-ws-body">{design.system_kwp} kWp</span></div>
+                )}
+                {design.est_annual_kwh != null && (
+                  <div><span className="text-ws-muted">Est. output: </span><span className="text-ws-body">~{design.est_annual_kwh.toLocaleString('en-GB')} kWh/yr</span></div>
+                )}
+              </div>
+              {roofSegments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-ws-border">
+                  {roofSegments.map((s, i) => {
+                    const label = segmentLabel(s)
+                    return label ? (
+                      <span
+                        key={i}
+                        className="inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-semibold bg-ws-green-tint2 text-ws-muted border border-ws-border"
+                      >
+                        {label}
+                      </span>
+                    ) : null
+                  })}
+                </div>
+              )}
+              <p className="mt-3 pt-3 border-t border-ws-border text-xs text-ws-muted">
+                Generated from satellite imagery to help you quote accurately — a site survey is still essential.
+              </p>
+            </>
+          ) : design?.status === 'pending' ? (
+            <p className="text-sm text-ws-muted">Roof analysis in progress — check back soon.</p>
+          ) : (
+            <p className="text-sm text-ws-muted">No automated roof analysis available for this property.</p>
           )}
         </div>
 

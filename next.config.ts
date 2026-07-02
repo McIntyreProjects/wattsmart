@@ -25,7 +25,8 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://lh3.googleusercontent.com",
+              // *.supabase.co: signed roof-layout images from private storage
+              "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.supabase.co",
               "frame-src https://js.stripe.com https://hooks.stripe.com",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.postcodes.io https://api.anthropic.com https://maps.googleapis.com https://api.uk.trustpilot.com https://*.ingest.de.sentry.io",
             ].join('; '),

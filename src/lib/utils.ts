@@ -30,6 +30,14 @@ export function getPostcodeDistrict(postcode: string): string {
   return match ? match[1] : cleaned
 }
 
+// Compass point (8-way) from an azimuth in degrees clockwise from north,
+// e.g. 135 -> "SE". Used to describe roof segments to installers.
+export function azimuthToCompass(degrees: number): string {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+  const normalised = ((degrees % 360) + 360) % 360
+  return dirs[Math.round(normalised / 45) % 8]
+}
+
 export const LAUNCH_POSTCODES = ['NE', 'DH', 'SR', 'TS', 'YO', 'HG', 'HX', 'HD', 'BD', 'LS', 'WF', 'DN', 'S']
 
 export function isLaunchPostcode(postcode: string): boolean {

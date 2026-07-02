@@ -1,6 +1,15 @@
 import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { Badge } from '@/components/ui/Badge'
+import { RegenerateDesignButton } from '@/components/dashboard/RegenerateDesignButton'
+
+const DESIGN_VARIANTS: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
+  ready: 'success',
+  pending: 'warning',
+  failed: 'danger',
+  unavailable: 'neutral',
+}
 
 type Enquiry = {
   id: string
@@ -34,6 +43,16 @@ export default async function AdminPipelinePage() {
 
   const all = (enquiries || []) as Enquiry[]
 
+  // Roof-design status per enquiry (Phase 1c). Absent = no design row.
+  const designStatus = new Map<string, string>()
+  if (all.length > 0) {
+    const { data: designs } = await admin
+      .from('roof_designs')
+      .select('enquiry_id, status')
+      .in('enquiry_id', all.map(e => e.id))
+    for (const d of designs || []) designStatus.set(d.enquiry_id, d.status)
+  }
+
   const grouped = COLUMNS.map(col => {
     const items = all.filter(e => col.status.includes(e.status))
     return { ...col, items, count: items.length, preview: items.slice(0, 2), more: Math.max(0, items.length - 2) }
@@ -58,6 +77,16 @@ export default async function AdminPipelinePage() {
                   }`}>
                     <p className="font-semibold text-sm">{(enq.products as string[]).join(' + ')} · {enq.postcode}</p>
                     <p className={`text-xs mt-1 ${col.done ? 'text-ws-dark-green' : 'text-ws-muted'}`}>{enq.reference}</p>
+                    {designStatus.has(enq.id) && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant={DESIGN_VARIANTS[designStatus.get(enq.id)!] ?? 'neutral'}>
+                          Roof: {designStatus.get(enq.id)}
+                        </Badge>
+                        {['failed', 'unavailable'].includes(designStatus.get(enq.id)!) && (
+                          <RegenerateDesignButton enquiryId={enq.id} />
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {col.more > 0 && (
