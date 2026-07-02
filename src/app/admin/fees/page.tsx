@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
@@ -40,16 +40,7 @@ export default async function AdminFeesPage() {
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
-      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
-          <Link href="/admin/customers" className="hover:text-ws-ink">Customers</Link>
-          <Link href="/admin/installers" className="hover:text-ws-ink">Installers</Link>
-          <Link href="/admin/pipeline" className="hover:text-ws-ink">Pipeline</Link>
-          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Fees</span>
-        </div>
-      </nav>
+      <AdminNav active="fees" />
 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <h1 className="font-display font-extrabold text-2xl tracking-tight mb-6">Fee income</h1>
@@ -70,14 +61,14 @@ export default async function AdminFeesPage() {
 
         {/* Recent invoices table */}
         <p className="eyebrow mb-3">Recent invoices</p>
-        <div className="border border-ws-border rounded-tile overflow-hidden">
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr] bg-[#FAFBFA] border-b border-ws-border px-4 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
+        <div className="border border-ws-border rounded-tile overflow-x-auto">
+          <div className="grid min-w-[640px] grid-cols-[2fr_1fr_1fr_1fr] bg-[#FAFBFA] border-b border-ws-border px-4 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
             <span>Installer</span><span>Amount</span><span>Status</span><span>Date</span>
           </div>
           {(recentInvoices || []).map((inv, i) => {
             const installer = (Array.isArray(inv.installers) ? inv.installers[0] : inv.installers) as { company_name: string } | null
             return (
-              <div key={inv.id} className={`grid grid-cols-[2fr_1fr_1fr_1fr] items-center px-4 py-3.5 text-sm ${i < (recentInvoices || []).length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+              <div key={inv.id} className={`grid min-w-[640px] grid-cols-[2fr_1fr_1fr_1fr] items-center px-4 py-3.5 text-sm ${i < (recentInvoices || []).length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
                 <span className="font-medium text-ws-ink">{installer?.company_name || '—'}</span>
                 <span className="font-mono text-ws-dark-green font-semibold">{formatCurrency(inv.amount)}</span>
                 <span className={`text-xs rounded-lg px-2.5 py-1 font-semibold inline-block w-fit ${statusStyle(inv.status)}`}>{inv.status}</span>

@@ -4,7 +4,7 @@ export default function CertExpiringPage() {
   // This is rendered as a banner/overlay on the installer dashboard login
   // Also exists as a standalone page for deep-link from email
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
       </nav>

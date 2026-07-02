@@ -45,7 +45,7 @@ export default function SetNewPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 bg-ws-bg">
       <div className="w-full max-w-[400px]">
         <div className="flex justify-center mb-8">
           <Logo />

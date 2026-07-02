@@ -43,7 +43,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
   const deadlinePast = deadline < new Date()
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-ws-card border-b border-ws-border">
         <div className="max-w-content mx-auto px-5 py-4 flex items-center gap-4">
           <Logo />
@@ -54,8 +54,7 @@ export default async function JobPage({ params }: { params: Promise<{ jobId: str
       <main className="max-w-content mx-auto px-5 py-10">
         <p className="eyebrow mb-2">Job brief</p>
         <h1
-          className="text-2xl font-bold text-ws-ink mb-6"
-          style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+          className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight"
         >
           {enq?.reference}
         </h1>

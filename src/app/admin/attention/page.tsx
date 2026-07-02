@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
@@ -72,17 +73,8 @@ export default async function AdminAttentionPage() {
   const watching = actionItems.filter(i => i.category === 'watching')
 
   return (
-    <div className="min-h-screen bg-ws-body/5" style={{ background: '#E7EAE7' }}>
-      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
-          <Link href="/admin/customers" className="hover:text-ws-ink">Customers</Link>
-          <Link href="/admin/installers" className="hover:text-ws-ink">Installers</Link>
-          <Link href="/admin/pipeline" className="hover:text-ws-ink">Pipeline</Link>
-          <Link href="/admin/fees" className="hover:text-ws-ink">Fees</Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-ws-bg">
+      <AdminNav />
 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <div className="flex items-baseline gap-3 mb-1">

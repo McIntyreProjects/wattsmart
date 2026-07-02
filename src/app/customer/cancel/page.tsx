@@ -82,14 +82,14 @@ function CancelPageInner() {
 
   if (paidAtLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#E7EAE7' }}>
+      <div className="min-h-screen flex items-center justify-center bg-ws-bg">
         <p className="text-sm text-ws-muted">Loading…</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-ws-border">
         <div className="max-w-content mx-auto px-5 py-4 flex items-center gap-4">
           <Logo />
@@ -223,7 +223,7 @@ function CancelPageInner() {
 
 export default function CancelPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: '#E7EAE7' }} />}>
+    <Suspense fallback={<div className="min-h-screen bg-ws-bg" />}>
       <CancelPageInner />
     </Suspense>
   )

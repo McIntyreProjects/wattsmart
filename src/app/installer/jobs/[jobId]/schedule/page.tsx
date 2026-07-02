@@ -12,7 +12,7 @@ export default function InstallerSchedulePage({ params }: { params: Promise<{ jo
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-ws-body/5" style={{ background: '#E7EAE7' }}>
+      <div className="min-h-screen bg-ws-bg">
         <div className="max-w-[560px] mx-auto px-5 py-10 text-center">
           <div className="w-12 h-12 rounded-full bg-[#EAF5EE] flex items-center justify-center mx-auto mb-4">
             <span className="text-ws-green text-xl">✓</span>
@@ -26,7 +26,7 @@ export default function InstallerSchedulePage({ params }: { params: Promise<{ jo
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4 flex items-center gap-4">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
         <Link href="/installer/dashboard" className="text-sm text-ws-muted hover:text-ws-body">← Dashboard</Link>

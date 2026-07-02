@@ -16,7 +16,7 @@ function RefundConfirmedInner() {
   const showFee = feeAmount !== null && feeAmount > 0
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-ws-border">
         <div className="max-w-content mx-auto px-5 py-4">
           <Logo />
@@ -70,7 +70,7 @@ function RefundConfirmedInner() {
 
 export default function RefundConfirmedPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: '#E7EAE7' }} />}>
+    <Suspense fallback={<div className="min-h-screen bg-ws-bg" />}>
       <RefundConfirmedInner />
     </Suspense>
   )

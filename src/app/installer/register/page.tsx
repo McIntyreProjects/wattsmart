@@ -3,7 +3,7 @@ import { Logo } from '@/components/ui/Logo'
 
 export default function InstallerRegisterPage() {
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="max-w-content mx-auto px-5 py-5">
         <Logo />
       </nav>

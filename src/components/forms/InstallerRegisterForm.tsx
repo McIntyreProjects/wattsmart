@@ -203,7 +203,7 @@ const canProceed = () => {
         </div>
         <h1
           className="text-2xl font-bold text-ws-ink mb-3"
-          style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+          style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}
         >
           Application submitted.
         </h1>
@@ -224,7 +224,7 @@ const canProceed = () => {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">Step 1 of 5</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Business details
             </h2>
           </div>
@@ -265,7 +265,7 @@ const canProceed = () => {
       {step === 1 && (
         <div>
           <p className="eyebrow mb-3">Step 2 of 5</p>
-          <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             What do you install?
           </h2>
           <div className="space-y-3">
@@ -293,7 +293,7 @@ const canProceed = () => {
         <div className="space-y-5">
           <div>
             <p className="eyebrow mb-3">Step 3 of 5</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Certification numbers
             </h2>
             <p className="text-sm text-ws-muted mb-6 leading-relaxed">Our team manually checks each number against the relevant register before your account goes live.</p>
@@ -375,7 +375,7 @@ const canProceed = () => {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">Step 4 of 5</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Coverage area
             </h2>
           </div>
@@ -399,7 +399,7 @@ const canProceed = () => {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">Step 5 of 5</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Create your portal password
             </h2>
           </div>

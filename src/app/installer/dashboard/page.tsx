@@ -79,7 +79,7 @@ export default async function InstallerDashboard() {
 
   if (installer.status === 'rejected') {
     return (
-      <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+      <div className="min-h-screen bg-ws-bg">
         <nav className="bg-ws-card border-b border-ws-border">
           <div className="max-w-content mx-auto px-5 py-4"><Logo /></div>
         </nav>
@@ -90,8 +90,7 @@ export default async function InstallerDashboard() {
             </svg>
           </div>
           <h1
-            className="text-2xl font-bold text-ws-ink mb-3"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-3 font-display tracking-tight"
           >
             Application unsuccessful.
           </h1>
@@ -109,7 +108,7 @@ export default async function InstallerDashboard() {
 
   if (installer.status === 'pending') {
     return (
-      <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+      <div className="min-h-screen bg-ws-bg">
         <nav className="bg-ws-card border-b border-ws-border">
           <div className="max-w-content mx-auto px-5 py-4"><Logo /></div>
         </nav>
@@ -120,8 +119,7 @@ export default async function InstallerDashboard() {
             </svg>
           </div>
           <h1
-            className="text-2xl font-bold text-ws-ink mb-3"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-3 font-display tracking-tight"
           >
             Application under review.
           </h1>
@@ -134,7 +132,7 @@ export default async function InstallerDashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
         <div className="flex gap-6 text-sm text-ws-muted">
@@ -149,8 +147,7 @@ export default async function InstallerDashboard() {
       <main className="max-w-content mx-auto px-5 py-10">
         <p className="eyebrow mb-2">Installer portal</p>
         <h1
-          className="text-3xl font-bold text-ws-ink mb-1"
-          style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+          className="text-3xl font-bold text-ws-ink mb-1 font-display tracking-tight"
         >
           Dashboard
         </h1>

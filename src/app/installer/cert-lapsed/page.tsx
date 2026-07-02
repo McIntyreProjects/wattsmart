@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function CertLapsedPage() {
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-[#E4EAE6] px-6 py-4">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
       </nav>

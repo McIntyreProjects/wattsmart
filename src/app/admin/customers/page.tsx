@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
@@ -38,16 +39,7 @@ export default async function AdminCustomersPage() {
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
-      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
-          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Customers</span>
-          <Link href="/admin/installers" className="hover:text-ws-ink">Installers</Link>
-          <Link href="/admin/pipeline" className="hover:text-ws-ink">Pipeline</Link>
-          <Link href="/admin/fees" className="hover:text-ws-ink">Fees</Link>
-        </div>
-      </nav>
+      <AdminNav active="customers" />
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-5">
@@ -55,8 +47,8 @@ export default async function AdminCustomersPage() {
           <span className="text-sm text-ws-muted">{all.length} total</span>
         </div>
 
-        <div className="border border-ws-border rounded-tile overflow-hidden">
-          <div className="grid grid-cols-[1.6fr_1.2fr_.85fr_1.1fr_.5fr] bg-[#FAFBFA] border-b border-ws-border px-5 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
+        <div className="border border-ws-border rounded-tile overflow-x-auto">
+          <div className="grid min-w-[640px] grid-cols-[1.6fr_1.2fr_.85fr_1.1fr_.5fr] bg-[#FAFBFA] border-b border-ws-border px-5 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
             <span>Customer</span><span>Status</span><span>Joined</span><span>Enquiries</span><span></span>
           </div>
           {all.map((c, i) => {
@@ -64,7 +56,7 @@ export default async function AdminCustomersPage() {
             const latest = enqs[0]
             const name = `${c.first_name} ${c.last_name}`
             return (
-              <div key={c.id} className={`grid grid-cols-[1.6fr_1.2fr_.85fr_1.1fr_.5fr] items-center px-5 py-4 text-sm ${i < all.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+              <div key={c.id} className={`grid min-w-[640px] grid-cols-[1.6fr_1.2fr_.85fr_1.1fr_.5fr] items-center px-5 py-4 text-sm ${i < all.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
                 <div>
                   <p className="font-bold">{name}</p>
                   {latest && <p className="text-xs text-ws-subtle mt-0.5">{latest.reference} · {(latest.products as string[]).join(' + ')}</p>}

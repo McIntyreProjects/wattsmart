@@ -71,8 +71,7 @@ function LoginForm() {
           </svg>
         </div>
         <h2
-          className="text-xl font-bold text-ws-ink mb-2"
-          style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+          className="text-xl font-bold text-ws-ink mb-2 font-display tracking-tight"
         >
           Check your email
         </h2>
@@ -89,8 +88,7 @@ function LoginForm() {
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="mb-6">
           <h1
-            className="text-2xl font-bold text-ws-ink mb-1"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-1 font-display tracking-tight"
           >
             Sign in to {labels[type]}
           </h1>
@@ -145,7 +143,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen flex flex-col bg-ws-bg">
       <nav className="max-w-content mx-auto px-5 py-5 w-full">
         <Logo />
       </nav>

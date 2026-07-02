@@ -11,7 +11,7 @@ export default async function QuotesPage({ params }: { params: Promise<{ enquiry
   if (!user) redirect(`/auth/login?type=customer`)
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-ws-card border-b border-ws-border">
         <div className="max-w-content mx-auto px-5 py-4 flex items-center gap-4">
           <Logo />

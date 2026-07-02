@@ -14,7 +14,7 @@ export default function AdminDunningPage({ params }: { params: Promise<{ install
   ]
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
         <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
         <Link href="/admin/fees" className="text-sm text-ws-muted hover:text-ws-body">← Fees</Link>

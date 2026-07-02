@@ -35,7 +35,7 @@ export function MetricCard({
     <div className="bg-white rounded-card border border-ws-border p-4">
       <div
         className="text-[22px] font-bold text-ws-ink"
-        style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+        style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}
       >
         {value}
       </div>

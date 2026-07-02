@@ -116,7 +116,7 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+      <div className="min-h-screen bg-ws-bg">
         <nav className="bg-white border-b border-ws-border">
           <div className="max-w-content mx-auto px-5 py-4 flex items-center gap-4">
             <Logo />
@@ -130,7 +130,7 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
       <nav className="bg-white border-b border-ws-border">
         <div className="max-w-content mx-auto px-5 py-4 flex items-center gap-4">
           <Logo />

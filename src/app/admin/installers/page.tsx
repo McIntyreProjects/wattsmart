@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
@@ -28,16 +29,7 @@ export default async function AdminInstallersPage() {
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
-      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
-          <Link href="/admin/customers" className="hover:text-ws-ink">Customers</Link>
-          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Installers</span>
-          <Link href="/admin/pipeline" className="hover:text-ws-ink">Pipeline</Link>
-          <Link href="/admin/fees" className="hover:text-ws-ink">Fees</Link>
-        </div>
-      </nav>
+      <AdminNav active="installers" />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="font-display font-extrabold text-2xl tracking-tight mb-5">Installer management</h1>
@@ -56,12 +48,12 @@ export default async function AdminInstallersPage() {
         </div>
 
         {/* All installers table */}
-        <div className="border border-ws-border rounded-tile overflow-hidden">
-          <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] bg-[#FAFBFA] border-b border-ws-border px-5 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
+        <div className="border border-ws-border rounded-tile overflow-x-auto">
+          <div className="grid min-w-[640px] grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] bg-[#FAFBFA] border-b border-ws-border px-5 py-3 text-xs font-semibold text-ws-subtle uppercase tracking-wider">
             <span>Company</span><span>Contact</span><span>Email</span><span>Status</span><span></span>
           </div>
           {all.map((inst, i) => (
-            <div key={inst.id} className={`grid grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] items-center px-5 py-4 text-sm ${i < all.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+            <div key={inst.id} className={`grid min-w-[640px] grid-cols-[2fr_1.5fr_1.5fr_1fr_.5fr] items-center px-5 py-4 text-sm ${i < all.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
               <div>
                 <p className="font-bold">{inst.trading_name || inst.company_name}</p>
                 {inst.trading_name && inst.trading_name !== inst.company_name && (
