@@ -1,6 +1,10 @@
 import Link from 'next/link'
 
-export const metadata = { title: 'Terms & conditions — WattSmart' }
+export const metadata = {
+  title: 'Terms & conditions — WattSmart',
+  description:
+    'The terms of using WattSmart: free anonymous quotes from certified installers and secure payments processed via Stripe.',
+}
 
 const sections = [
   {
@@ -13,7 +17,7 @@ const sections = [
   },
   {
     title: '3 · Deposits',
-    body: "Your deposit is held securely by WattSmart and is fully refundable until your installation date is confirmed. It's released to the installer only once you've approved the date.",
+    body: "Your deposit is paid to your chosen installer at the time of payment, processed securely by WattSmart's payment provider (Stripe). WattSmart does not hold your funds. Your deposit is fully refundable within 14 days of payment; after 14 days, WattSmart's 5% fee is non-refundable.",
   },
   {
     title: '4 · Payments',

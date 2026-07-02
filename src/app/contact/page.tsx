@@ -51,8 +51,8 @@ export default function ContactPage() {
       <div className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="font-display font-extrabold text-4xl tracking-tight mb-2">Get in touch</h1>
         <p className="text-ws-muted text-base leading-relaxed max-w-xl mb-10">
-          WattSmart mostly runs itself — but we're here when you need a human. Most answers are in
-          the Help Centre; otherwise drop us a message and we'll reply within one working day.
+          WattSmart mostly runs itself — but we're here when you need a human. Drop us a message
+          and we'll reply within one working day.
         </p>
 
         <div className="flex gap-8 flex-wrap">

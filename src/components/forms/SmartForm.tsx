@@ -171,7 +171,7 @@ export function SmartForm() {
             <path d="M5 13l4 4L19 7" stroke="#15A05A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+        <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
           Enquiry submitted.
         </h1>
         <p className="text-ws-muted mb-1">Your reference is <strong className="text-ws-ink">{ref}</strong>.</p>
@@ -201,7 +201,7 @@ export function SmartForm() {
       {step === 0 && (
         <div>
           <p className="eyebrow mb-3">1 / 6</p>
-          <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             What are you thinking of?
           </h2>
           <p className="text-sm text-ws-muted mb-6">Pick all that apply — we&apos;ll tailor the rest.</p>
@@ -231,7 +231,7 @@ export function SmartForm() {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">2 / 6</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               About your property
             </h2>
           </div>
@@ -315,7 +315,7 @@ export function SmartForm() {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">3 / 6</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Your energy usage
             </h2>
           </div>
@@ -356,7 +356,7 @@ export function SmartForm() {
       {step === 3 && (
         <div>
           <p className="eyebrow mb-3">4 / 6</p>
-          <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-bold text-ws-ink mb-1" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             What&apos;s your goal?
           </h2>
           <p className="text-sm text-ws-muted mb-6">This helps us size your system correctly.</p>
@@ -382,7 +382,7 @@ export function SmartForm() {
         <div className="space-y-4">
           <div>
             <p className="eyebrow mb-3">5 / 6</p>
-            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
               Where should installers quote for?
             </h2>
           </div>
@@ -444,7 +444,7 @@ export function SmartForm() {
       {step === 5 && (
         <div>
           <p className="eyebrow mb-3">6 / 6</p>
-          <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-bold text-ws-ink mb-6" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             Here&apos;s what we recommend.
           </h2>
 
@@ -502,7 +502,7 @@ export function SmartForm() {
           )}
 
           <div className="bg-ws-green-tint border border-ws-green/20 rounded-card p-4 mb-6 text-sm leading-relaxed text-ws-body">
-            We&apos;ll send your anonymous property details to three trusted, certified local installers. They&apos;ll each provide a quote — you compare them side by side without knowing who&apos;s who.
+            We&apos;ll send your anonymous property details to up to 3 trusted, certified local installers. They&apos;ll each provide a quote — you compare them side by side without knowing who&apos;s who.
           </div>
 
           {error && <p className="text-ws-red-text text-sm mb-4">{error}</p>}

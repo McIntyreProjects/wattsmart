@@ -18,14 +18,45 @@ const PRODUCTS = [
 
 const HOW_IT_WORKS = [
   { n: '1', title: 'Tell us about your home',        body: 'A few quick questions — products, property, energy use.' },
-  { n: '2', title: 'Get up to 3 anonymous quotes',   body: 'We ask three certified local installers to quote. You compare them side by side — names hidden.' },
-  { n: '3', title: 'Choose & pay securely',           body: 'Pick your favourite. Pay a refundable deposit — we hold it until your date\'s confirmed.' },
+  { n: '2', title: 'Get up to 3 anonymous quotes',   body: 'We ask up to 3 certified local installers to quote. You compare them side by side — names hidden.' },
+  { n: '3', title: 'Choose & pay securely',           body: 'Pick your favourite. Pay your deposit securely through WattSmart — full refund if you cancel within 14 days.' },
   { n: '4', title: 'Meet your installer',             body: 'They call within one working day to book your survey.' },
 ]
 
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'WattSmart',
+      url: 'https://wattsmart.co.uk',
+      logo: 'https://wattsmart.co.uk/logo.png',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: 'hello@wattsmart.co.uk',
+        contactType: 'customer service',
+        availableLanguage: 'English',
+      },
+    },
+    {
+      '@type': 'Service',
+      name: 'Solar, battery, heat pump and EV charger installation quotes',
+      description:
+        'Free, anonymous quotes from up to 3 certified local installers for solar panels, battery storage, heat pumps and EV chargers.',
+      provider: { '@type': 'Organization', name: 'WattSmart', url: 'https://wattsmart.co.uk' },
+      serviceType: 'Renewable energy installation quotes',
+      areaServed: ['North East England', 'Yorkshire'],
+    },
+  ],
+}
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen" style={{ background: '#E7EAE7' }}>
+    <div className="min-h-screen bg-ws-bg">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* Nav */}
       <nav className="max-w-content mx-auto px-5 py-5 flex items-center justify-between">
         <Logo />
@@ -42,18 +73,17 @@ export default function HomePage() {
         <section className="pt-10 pb-12">
           <p className="eyebrow mb-4">Free · no spam · no pressure</p>
           <h1
-            className="text-[38px] leading-[1.03] font-bold text-ws-ink mb-4"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-[38px] leading-[1.03] font-bold text-ws-ink mb-4 font-display tracking-tight"
           >
             Green-energy quotes without the 20 phone calls.
           </h1>
           <p className="text-[17px] text-ws-body leading-relaxed mb-8">
-            We send your enquiry to three certified local installers to quote. They never get
+            We send your enquiry to up to 3 certified local installers to quote. They never get
             your name or number unless you accept their quote.
           </p>
           <Link href="/get-quotes">
             <Button size="lg" className="w-full sm:w-auto">
-              Get quotes from 3 installers →
+              Get up to 3 quotes →
             </Button>
           </Link>
           <p className="text-sm text-ws-muted mt-3">Free, no obligation · about 3 minutes</p>
@@ -76,8 +106,7 @@ export default function HomePage() {
         {/* How it works */}
         <section id="how-it-works" className="py-10 border-t border-ws-border">
           <h2
-            className="text-2xl font-bold text-ws-ink mb-6"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight"
           >
             How it works
           </h2>
@@ -102,8 +131,7 @@ export default function HomePage() {
         {/* What we cover */}
         <section className="py-10 border-t border-ws-border">
           <h2
-            className="text-2xl font-bold text-ws-ink mb-6"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-6 font-display tracking-tight"
           >
             What we cover
           </h2>
@@ -149,15 +177,14 @@ export default function HomePage() {
         {/* Final CTA */}
         <section className="py-10 border-t border-ws-border text-center">
           <h2
-            className="text-2xl font-bold text-ws-ink mb-2"
-            style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}
+            className="text-2xl font-bold text-ws-ink mb-2 font-display tracking-tight"
           >
             Ready for quotes you can trust?
           </h2>
           <p className="text-ws-muted text-sm mb-6">Free, anonymous, no obligation.</p>
           <Link href="/get-quotes">
             <Button size="lg" className="w-full sm:w-auto">
-              Get quotes from 3 installers →
+              Get up to 3 quotes →
             </Button>
           </Link>
         </section>

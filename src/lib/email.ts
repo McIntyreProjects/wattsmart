@@ -103,7 +103,7 @@ export async function sendInstallerChosen(to: string, ref: string, portalUrl: st
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Great news — you've been chosen.</h2>
     <p>A customer has selected your quote for job <strong>${ref}</strong>.</p>
-    <p>The customer's deposit has been received and is being held securely by WattSmart. Contact them within one working day to arrange a site survey.</p>
+    <p>The customer's deposit has been paid and your 95% share has been transferred to your Stripe account. Contact them within one working day to arrange a site survey.</p>
     <p style="margin:24px 0;">
       <a href="${portalUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View job details →</a>
     </p>
@@ -117,7 +117,7 @@ export async function sendDepositConfirmedCustomer(to: string, ref: string, amou
     "Your deposit is confirmed. You're all set.",
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Deposit confirmed.</h2>
-    <p>Your deposit of <strong>${amount}</strong> for job <strong>${ref}</strong> has been received and is held securely by WattSmart.</p>
+    <p>Your deposit of <strong>${amount}</strong> for job <strong>${ref}</strong> has been paid securely to your installer through WattSmart.</p>
     <p>Your installer will be in touch within one working day to arrange your site survey and confirm your installation date.</p>
     `
   )
@@ -129,7 +129,7 @@ export async function sendDepositConfirmedInstaller(to: string, ref: string) {
     'Deposit received — contact the customer to arrange your survey',
     `
     <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Deposit received.</h2>
-    <p>The customer has paid their deposit for job <strong>${ref}</strong>. Funds are held by WattSmart and will be released to you once the installation date is confirmed.</p>
+    <p>The customer has paid their deposit for job <strong>${ref}</strong>. Your 95% share has been transferred to your Stripe account.</p>
     <p>Please contact the customer within one working day to arrange a site survey.</p>
     `
   )
@@ -138,10 +138,10 @@ export async function sendDepositConfirmedInstaller(to: string, ref: string) {
 export async function sendDepositReleased(to: string, ref: string, amount: string) {
   await send(
     to,
-    'Your deposit payment has been released',
+    'Your deposit payment is confirmed',
     `
-    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Payment released.</h2>
-    <p>The deposit of <strong>${amount}</strong> for job <strong>${ref}</strong> has been released to your account (minus the 5% WattSmart referral fee).</p>
+    <h2 style="font-family:'Fraunces',Georgia,serif;font-size:22px;color:#1B3A2D;margin:24px 0 12px;">Payment confirmed.</h2>
+    <p>The deposit of <strong>${amount}</strong> for job <strong>${ref}</strong> was paid to your Stripe account at the time of payment. The 5% WattSmart referral fee was deducted automatically when the customer paid.</p>
     `
   )
 }

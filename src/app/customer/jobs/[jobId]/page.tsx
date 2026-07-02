@@ -142,7 +142,7 @@ export default async function JobProgressPage({ params }: { params: Promise<{ jo
             <div className="pb-5">
               <p className={`font-bold text-sm ${step1Done ? '' : 'text-ws-subtle'}`}>Deposit paid</p>
               <p className="text-xs text-ws-subtle mt-0.5">
-                {step1Done ? (depositAmount !== null ? `£${depositAmount.toLocaleString('en-GB')} held securely` : 'Deposit held securely') : 'Pay deposit to get started'}
+                {step1Done ? (depositAmount !== null ? `£${depositAmount.toLocaleString('en-GB')} paid securely through WattSmart` : 'Deposit paid securely through WattSmart') : 'Pay deposit to get started'}
               </p>
             </div>
           </div>

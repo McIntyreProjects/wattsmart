@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import AdminNav from '@/components/ui/AdminNav'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
@@ -41,22 +41,14 @@ export default async function AdminPipelinePage() {
 
   return (
     <div className="min-h-screen bg-ws-body font-body text-ws-ink">
-      <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
-        <span className="font-display font-extrabold text-lg tracking-tight">WattSmart</span>
-        <div className="flex gap-6 text-sm text-ws-muted">
-          <Link href="/admin/dashboard" className="hover:text-ws-ink">Overview</Link>
-          <Link href="/admin/customers" className="hover:text-ws-ink">Customers</Link>
-          <Link href="/admin/installers" className="hover:text-ws-ink">Installers</Link>
-          <span className="text-ws-dark-green font-bold border-b-2 border-ws-green pb-1">Pipeline</span>
-          <Link href="/admin/fees" className="hover:text-ws-ink">Fees</Link>
-        </div>
-      </nav>
+      <AdminNav active="pipeline" />
 
       <div className="px-6 py-8">
         <h1 className="font-display font-extrabold text-2xl tracking-tight mb-6">Job pipeline</h1>
 
-        <div className="grid grid-cols-4 gap-4">
-          {grouped.map((col) => (
+        <div className="overflow-x-auto">
+          <div className="grid min-w-[640px] grid-cols-4 gap-4">
+            {grouped.map((col) => (
             <div key={col.label}>
               <p className="eyebrow mb-3">{col.label} · {col.count}</p>
               <div className="flex flex-col gap-2">
@@ -80,7 +72,8 @@ export default async function AdminPipelinePage() {
                 )}
               </div>
             </div>
-          ))}
+            ))}
+          </div>
         </div>
         <div className="mt-6 flex flex-col gap-2 max-w-2xl">
           <p className="text-xs text-ws-muted leading-relaxed">
@@ -88,7 +81,7 @@ export default async function AdminPipelinePage() {
           </p>
           <div className="border border-ws-border rounded-xl px-4 py-3 bg-white text-xs text-ws-muted leading-relaxed">
             <span className="font-semibold text-ws-ink">How matching works — </span>
-            We send each brief to the 3 nearest verified installers who hold the right certifications and cover the customer&apos;s postcode district, supporting local businesses and fast turnaround.
+            We send each brief to up to 3 nearest verified installers who hold the right certifications and cover the customer&apos;s postcode district, supporting local businesses and fast turnaround.
           </div>
         </div>
       </div>

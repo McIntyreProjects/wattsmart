@@ -119,7 +119,7 @@ export default function ApproveInstallDatePage() {
                 <div className="text-right">
                   <p className="text-xs text-ws-subtle">Deposit</p>
                   <p className="font-display font-extrabold text-base text-ws-dark-green">
-                    £{info.depositAmount.toLocaleString('en-GB')} held
+                    £{info.depositAmount.toLocaleString('en-GB')} paid
                   </p>
                 </div>
               )}
@@ -180,7 +180,7 @@ export default function ApproveInstallDatePage() {
                       <span className="text-ws-green mt-px">→</span>
                       <p className="text-xs text-ws-muted leading-relaxed">
                         Accepting locks in your install date and notifies {info.installerName}.
-                        {info.depositAmount !== null && ` Your £${info.depositAmount.toLocaleString('en-GB')} deposit is already held.`}
+                        {info.depositAmount !== null && ` Your £${info.depositAmount.toLocaleString('en-GB')} deposit is already paid.`}
                       </p>
                     </div>
                   </>

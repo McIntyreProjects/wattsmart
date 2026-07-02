@@ -95,7 +95,7 @@ function DepositForm({
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5"/>
         </svg>
-        Secured by Stripe — fully refundable before installation is confirmed
+        Processed securely by Stripe — full refund if you cancel within 14 days
       </div>
 
       <div className="mb-4">
@@ -190,10 +190,10 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
       <div>
         <div className="mb-8">
           <p className="eyebrow mb-2">All confirmed</p>
-          <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             Here&apos;s who you&apos;ll be working with.
           </h1>
-          <p className="text-sm text-ws-muted">Your deposit is held securely. Expect to hear from them within one working day.</p>
+          <p className="text-sm text-ws-muted">Your deposit is paid securely through WattSmart. Expect to hear from them within one working day.</p>
         </div>
 
         <Card className="mb-6">
@@ -260,7 +260,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
       <div>
         <div className="mb-6">
           <p className="eyebrow mb-2">Secure your slot</p>
-          <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+          <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
             Pay your deposit.
           </h1>
           <p className="text-sm text-ws-muted mb-1">
@@ -285,11 +285,11 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
   return (
     <div>
       <p className="eyebrow mb-2">Your quotes</p>
-      <h1 className="text-3xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+      <h1 className="text-3xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
         Compare your quotes.
       </h1>
       <p className="text-sm text-ws-muted mb-1">
-        All three installers are MCS certified and independently verified by WattSmart. None of them can contact you directly.
+        Every installer quoting is MCS certified and independently verified by WattSmart. None of them can contact you directly.
       </p>
       <p className="text-xs text-ws-muted mb-8">{enquiry?.reference}</p>
 
@@ -308,7 +308,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="text-[11px] text-ws-muted uppercase tracking-wider font-semibold">Quote {q.label}</div>
-                <div className="text-2xl font-bold text-ws-ink mt-0.5" style={{ fontFamily: 'Bricolage Grotesque, sans-serif', letterSpacing: '-0.02em' }}>
+                <div className="text-2xl font-bold text-ws-ink mt-0.5" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
                   {formatCurrency(q.total_price)}
                 </div>
                 <div className="text-sm text-ws-muted">Deposit: {formatCurrency(q.deposit_amount)}</div>
