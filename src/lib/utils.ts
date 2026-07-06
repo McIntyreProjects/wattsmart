@@ -50,7 +50,11 @@ export function azimuthToCompass(degrees: number): string {
 
 // Launch areas: North East England & Yorkshire postcode AREAS.
 // "S" is Sheffield; "SR" is Sunderland. Both are legitimately in the list.
-export const LAUNCH_POSTCODES = ['NE', 'DH', 'SR', 'TS', 'YO', 'HG', 'HX', 'HD', 'BD', 'LS', 'WF', 'DN', 'S']
+// Full North East England + Yorkshire coverage:
+// NE Newcastle, DH Durham, SR Sunderland, DL Darlington, TS Teesside,
+// YO York, HU Hull, HG Harrogate, LS Leeds, BD Bradford, WF Wakefield,
+// HX Halifax, HD Huddersfield, S Sheffield, DN Doncaster
+export const LAUNCH_POSTCODES = ['NE', 'DH', 'SR', 'DL', 'TS', 'YO', 'HU', 'HG', 'HX', 'HD', 'BD', 'LS', 'WF', 'DN', 'S']
 
 // Exact area equality, NOT prefix matching:
 //   isLaunchPostcode('S1 4XD')   → true   (area "S", Sheffield ∈ launch list)
