@@ -36,7 +36,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       {/* Nav */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-ws-border bg-white">
         <Link href="/" className="font-display font-extrabold text-xl text-ws-ink tracking-tight">
@@ -44,6 +44,7 @@ export default function ContactPage() {
         </Link>
         <div className="flex gap-6 text-sm text-ws-muted">
           <Link href="/#how-it-works" className="hover:text-ws-ink transition-colors">How it works</Link>
+          <Link href="/about" className="hover:text-ws-ink transition-colors">About</Link>
           <Link href="/contact" className="text-ws-dark-green font-bold">Contact</Link>
         </div>
       </nav>

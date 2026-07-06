@@ -17,7 +17,7 @@ const sections = [
   },
   {
     title: 'Your data',
-    body: "Installers quoting for your job see only your area (for example NE1) and your property details — never your name, address or contact details until you accept a quote and pay a deposit. If we produce a roof analysis for your property, it's shared with installers without your address.",
+    body: "Installers quoting for your job see only your area (for example NE1) and your property details — never your name, address or contact details until you accept a quote and pay a deposit. Only the one installer you choose ever receives your contact details; the others never do. And WattSmart itself will never cold call you or pass your details to anyone else.",
   },
   {
     title: 'If something goes wrong',
@@ -31,7 +31,7 @@ const sections = [
 
 export default function HowYoureProtectedPage() {
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <nav className="flex items-center justify-between px-8 py-4 border-b border-ws-border bg-white">
         <Link href="/" className="font-display font-extrabold text-xl text-ws-ink tracking-tight">
           WattSmart
