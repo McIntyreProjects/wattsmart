@@ -9,11 +9,11 @@ export const metadata = {
 const sections = [
   {
     title: 'What we collect',
-    body: 'The details you give in your enquiry (property, energy use, goals), your contact details, and payment information processed securely by Stripe. We never store full card details.',
+    body: 'The details you give in your enquiry (property, energy use, goals), your address, your contact details, and payment information processed securely by Stripe. We never store full card details.',
   },
   {
     title: 'How we use it',
-    body: 'To match you with certified local installers, generate your system recommendation, process your deposit and balance, and keep you updated on your job.',
+    body: 'To match you with certified local installers, generate your system recommendation — including, for most properties, a satellite roof analysis produced using Google’s Solar API from your address — process your deposit and balance, and keep you updated on your job. The roof analysis shared with installers never includes your address.',
   },
   {
     title: 'Your anonymity',
@@ -21,7 +21,7 @@ const sections = [
   },
   {
     title: 'Who we share it with',
-    body: "Only your chosen installer (after deposit), and trusted processors like Stripe for payments. We never sell your data.",
+    body: 'Your chosen installer receives your contact details after you pay a deposit — the other installers never do; while quoting, installers see only your general area (like NE1) and property details. We also use trusted service providers to run WattSmart: Stripe (payments), Google (address lookup and roof analysis), Supabase (our database, hosted in the EU), Vercel (website hosting), Microsoft (email) and Sentry (error monitoring, EU-hosted). We never sell your data.',
   },
   {
     title: 'Your rights',
@@ -59,6 +59,9 @@ export default function PrivacyPage() {
           <Link href="/terms" className="hover:text-ws-ink">Terms & conditions</Link>
           <Link href="/contact" className="hover:text-ws-ink">Contact us</Link>
         </div>
+        <p className="mt-4 text-xs text-ws-subtle">
+          WattSmart is a trading name of Steven McIntyre · hello@wattsmart.co.uk
+        </p>
       </div>
     </div>
   )

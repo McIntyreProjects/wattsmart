@@ -205,6 +205,11 @@ export default function HomePage() {
           </nav>
           <span>© 2026 · wattsmart.co.uk</span>
         </div>
+        <div className="max-w-content mx-auto px-5 mt-4 text-xs text-ws-muted">
+          WattSmart is a trading name of Steven McIntyre ·{' '}
+          <a href="mailto:hello@wattsmart.co.uk" className="hover:text-ws-body transition-colors">hello@wattsmart.co.uk</a>
+          {/* TODO: add trading address + ICO registration reference once available */}
+        </div>
       </footer>
     </div>
   )

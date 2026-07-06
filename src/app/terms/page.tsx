@@ -60,6 +60,9 @@ export default function TermsPage() {
           <Link href="/how-youre-protected" className="hover:text-ws-ink">How you&apos;re protected</Link>
           <Link href="/contact" className="hover:text-ws-ink">Contact us</Link>
         </div>
+        <p className="mt-4 text-xs text-ws-subtle">
+          WattSmart is a trading name of Steven McIntyre · hello@wattsmart.co.uk
+        </p>
       </div>
     </div>
   )
