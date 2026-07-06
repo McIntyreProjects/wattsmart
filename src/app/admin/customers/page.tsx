@@ -38,7 +38,7 @@ export default async function AdminCustomersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <AdminNav active="customers" />
 
       <div className="max-w-5xl mx-auto px-6 py-8">

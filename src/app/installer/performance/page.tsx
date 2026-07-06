@@ -31,7 +31,7 @@ export default function InstallerPerformancePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <p className="text-sm text-ws-muted">Loading…</p>
       </div>
     )
@@ -39,7 +39,7 @@ export default function InstallerPerformancePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <div className="max-w-sm text-center">
           <p className="text-sm text-[#C2603F]">{error}</p>
           <Link href="/installer/dashboard" className="inline-block mt-5 text-sm text-ws-dark-green font-semibold hover:underline">← Back to dashboard</Link>
@@ -50,7 +50,7 @@ export default function InstallerPerformancePage() {
 
   if (userRole === 'member') {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <div className="max-w-sm text-center">
           <p className="font-display font-extrabold text-xl tracking-tight mb-2">Access restricted</p>
           <p className="text-sm text-ws-muted">Only Managers can view performance metrics. Contact your Manager if you need access.</p>
@@ -75,7 +75,7 @@ export default function InstallerPerformancePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <div className="max-w-3xl mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-7">
           <Link href="/installer/dashboard" className="text-ws-muted text-sm">← Dashboard</Link>

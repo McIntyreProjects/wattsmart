@@ -35,7 +35,7 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <nav className="flex items-center justify-between px-8 py-4 border-b border-ws-border bg-white">
         <Link href="/" className="font-display font-extrabold text-xl text-ws-ink tracking-tight">
           WattSmart

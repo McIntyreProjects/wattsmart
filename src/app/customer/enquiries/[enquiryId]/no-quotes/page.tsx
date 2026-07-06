@@ -3,7 +3,7 @@ import { Logo } from '@/components/ui/Logo'
 
 export default async function NoQuotesPage() {
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center justify-between pb-4">
           <Logo />

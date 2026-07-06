@@ -212,7 +212,7 @@ export default function InstallerProfilePage() {
   ].filter(Boolean).join(' · ')
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <div className="max-w-2xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-7">

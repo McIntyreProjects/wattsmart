@@ -31,7 +31,7 @@ export default async function CustomerSettingsPage() {
   const email = user.email ?? '—'
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

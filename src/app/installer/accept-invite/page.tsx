@@ -51,7 +51,7 @@ function AcceptInviteContent() {
 
   if (tokenError) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <div className="max-w-sm text-center">
           <p className="font-display font-extrabold text-xl tracking-tight mb-2">Invalid invite</p>
           <p className="text-sm text-ws-muted leading-relaxed mb-5">{tokenError} Invite links expire after 7 days.</p>
@@ -63,7 +63,7 @@ function AcceptInviteContent() {
 
   if (!invite) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <p className="text-sm text-ws-muted">Loading invite…</p>
       </div>
     )
@@ -71,7 +71,7 @@ function AcceptInviteContent() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <div className="max-w-sm text-center">
           <div className="w-14 h-14 rounded-full bg-[#EAF5EE] flex items-center justify-center mx-auto mb-5 text-2xl">✓</div>
           <h1 className="font-display font-extrabold text-2xl tracking-tight mb-2">You&apos;re in.</h1>
@@ -90,7 +90,7 @@ function AcceptInviteContent() {
   }
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex justify-center">
           <Logo />
@@ -166,7 +166,7 @@ function AcceptInviteContent() {
 export default function AcceptInvitePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink flex items-center justify-center px-6">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink flex items-center justify-center px-6">
         <p className="text-sm text-ws-muted">Loading…</p>
       </div>
     }>

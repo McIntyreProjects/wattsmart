@@ -28,7 +28,7 @@ export default async function AdminInstallersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <AdminNav active="installers" />
 
       <div className="max-w-4xl mx-auto px-6 py-8">

@@ -59,7 +59,7 @@ export default async function SupportPage({ params }: { params: Promise<{ jobId:
   const installerEmail = installer?.contact_email ?? null
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <Link href={`/customer/jobs/${jobId}`} className="text-ws-muted text-lg">←</Link>

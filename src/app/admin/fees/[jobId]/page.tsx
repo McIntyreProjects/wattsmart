@@ -38,7 +38,7 @@ export default async function AdminFeeDetailPage({
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+      <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
         <AdminNav active="fees" />
         <div className="max-w-xl mx-auto px-6 py-16 text-center">
           <h1 className="font-display font-extrabold text-2xl tracking-tight mb-2">Job not found</h1>
@@ -115,7 +115,7 @@ export default async function AdminFeeDetailPage({
   const isProjected = !finalPayment
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <AdminNav active="fees" />
 
       <div className="max-w-xl mx-auto px-6 py-8">

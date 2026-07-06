@@ -15,7 +15,7 @@ export default async function AdminSettingsPage() {
   if (!fullUser || fullUser.app_metadata?.role !== 'admin') redirect('/auth/login?type=admin')
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
         <Logo />
         <div className="flex gap-6 text-sm text-ws-muted">

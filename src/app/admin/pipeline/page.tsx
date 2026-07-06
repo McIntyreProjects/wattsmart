@@ -59,7 +59,7 @@ export default async function AdminPipelinePage() {
   })
 
   return (
-    <div className="min-h-screen bg-ws-body font-body text-ws-ink">
+    <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <AdminNav active="pipeline" />
 
       <div className="px-6 py-8">
