@@ -139,7 +139,7 @@ export function CancelForm({
             </Link>
 
             <p className="text-xs text-ws-muted mt-4 leading-relaxed">
-              The 14-day cooling-off period is your legal right under the Consumer Contracts Regulations 2013 — it runs from the day you pay your deposit, and WattSmart handles the refund process for you. After it ends, WattSmart&apos;s 5% fee is non-refundable. Your other statutory rights (including under RECC) are never affected.
+              The 14-day cooling-off period is your legal right under the Consumer Contracts Regulations 2013 — it runs from the day you pay your deposit, and WattSmart handles the refund process for you. After it ends, WattSmart&apos;s 5% fee is non-refundable. Your other statutory rights are never affected.
             </p>
           </div>
         ) : (

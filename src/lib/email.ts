@@ -203,8 +203,9 @@ export async function sendFeeInvoice(
     <p>A referral fee invoice has been generated for job <strong>${ref}</strong>.</p>
     ${breakdownHtml}
     <p>Due date: <strong>${dueDate}</strong></p>
+    <p>You can view and pay your invoice online — payment is taken securely by card through Stripe.</p>
     <p style="margin:24px 0;">
-      <a href="${invoiceUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View invoice →</a>
+      <a href="${invoiceUrl}" style="background:#1B3A2D;color:#4AFFA0;text-decoration:none;border-radius:8px;padding:12px 28px;font-family:Inter,Arial,sans-serif;font-weight:500;font-size:15px;display:inline-block;">View and pay invoice →</a>
     </p>
     `
   )

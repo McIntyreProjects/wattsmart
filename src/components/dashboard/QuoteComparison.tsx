@@ -22,6 +22,21 @@ interface InstallerData {
   contact_name: string
   contact_email: string
   contact_phone: string
+  // Cert types from the certifications table with status='verified',
+  // returned by /api/payments/reveal. Badges render only from this list.
+  verified_certifications?: string[]
+}
+
+// certifications.type → customer-facing badge label. Anything not in this
+// map (or not verified) never renders as a badge.
+const CERT_BADGE_LABELS: Record<string, string> = {
+  mcs: 'MCS certified',
+  recc: 'RECC member',
+  hies: 'HIES member',
+  niceic: 'NICEIC registered',
+  napit: 'NAPIT registered',
+  ozev: 'OZEV authorised',
+  trustmark: 'TrustMark registered',
 }
 
 interface Review {
@@ -211,7 +226,15 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
             <div><span className="text-ws-muted">Phone: </span><a href={`tel:${installer.contact_phone}`} className="text-ws-green font-medium">{installer.contact_phone}</a></div>
           </div>
           <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-ws-border">
-            {['MCS certified', 'RECC member', 'WattSmart verified'].map(badge => (
+            {[
+              // Only certs this installer verifiably holds.
+              ...(installer.verified_certifications || [])
+                .map(type => CERT_BADGE_LABELS[type])
+                .filter((label): label is string => Boolean(label)),
+              // An installer can only reach the reveal step if their account
+              // is active, i.e. approved by WattSmart — so this is always true here.
+              'WattSmart verified',
+            ].map(badge => (
               <span key={badge} className="text-xs px-2.5 py-0.5 rounded-pill font-semibold" style={{ background: '#EAF5EE', color: '#0E7A43', border: '1px solid rgba(21,160,90,0.2)' }}>
                 {badge}
               </span>
@@ -289,7 +312,7 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
         Compare your quotes.
       </h1>
       <p className="text-sm text-ws-muted mb-1">
-        Every installer quoting is MCS certified and independently verified by WattSmart. None of them can contact you directly.
+        Every installer quoting holds the certifications required for this work, checked by WattSmart before they go live. None of them can contact you directly.
       </p>
       <p className="text-xs text-ws-muted mb-8">{enquiry?.reference}</p>
 

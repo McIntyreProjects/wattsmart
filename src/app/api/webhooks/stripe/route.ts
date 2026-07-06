@@ -87,6 +87,29 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'checkout.session.completed': {
+        // Installer fee-invoice payments (Checkout on the platform account).
+        // Sessions without fee_invoice_id metadata are not ours to handle here.
+        const session = event.data.object as Stripe.Checkout.Session
+        const feeInvoiceId = session.metadata?.fee_invoice_id
+        // Delayed payment methods can complete a session with payment_status
+        // 'unpaid' — only mark the invoice paid once funds are confirmed.
+        if (feeInvoiceId && session.payment_status === 'paid') {
+          const { error: updateError } = await admin
+            .from('fee_invoices')
+            .update({ status: 'paid', paid_at: new Date().toISOString() })
+            .eq('id', feeInvoiceId)
+
+          if (updateError) {
+            // Throw so the outer handler Sentry-captures and returns 500 → Stripe retries.
+            throw new Error(
+              `Failed to mark fee invoice ${feeInvoiceId} paid (session ${session.id}): ${updateError.message}`
+            )
+          }
+        }
+        break
+      }
+
       case 'charge.dispute.created': {
         const dispute = event.data.object as Stripe.Dispute
         const disputePi = (dispute.payment_intent as string | null) ?? 'unknown'

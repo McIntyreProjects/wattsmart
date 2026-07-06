@@ -66,7 +66,7 @@ export default function SupportTopicPicker({ installerName, installerEmail }: Pr
               <div className="border border-ws-border rounded-btn p-3 bg-white mt-2">
                 <p className="text-xs font-semibold text-ws-ink mb-0.5">Independent escalation route</p>
                 <p className="text-xs text-ws-muted leading-relaxed">
-                  If messaging doesn&apos;t resolve it, you can raise a formal complaint via <strong>RECC</strong> or <strong>TrustMark</strong> — the independent consumer codes your installer is registered with.
+                  If messaging doesn&apos;t resolve it, you can raise a formal complaint through the independent consumer code your installer is registered with (such as RECC, HIES or TrustMark) — ask us and we&apos;ll point you to the right one.
                 </p>
               </div>
             </>

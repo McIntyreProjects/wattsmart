@@ -401,7 +401,7 @@ export default function InstallerProfilePage() {
                   rows={3}
                   value={coverageDraft}
                   onChange={e => setCoverageDraft(e.target.value)}
-                  placeholder="e.g. SW1, EC1, N1, E1"
+                  placeholder="e.g. NE, DH, SR, TS, YO"
                 />
                 {coverageError && <p className="text-xs text-[#C2603F] mt-1">{coverageError}</p>}
                 <div className="flex gap-2 mt-2">

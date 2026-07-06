@@ -197,6 +197,7 @@ export default function HomePage() {
           <nav className="flex flex-wrap gap-4">
             <Link href="/#how-it-works" className="hover:text-ws-body transition-colors">How it works</Link>
             <Link href="/contact"       className="hover:text-ws-body transition-colors">Contact us</Link>
+            <Link href="/how-youre-protected" className="hover:text-ws-body transition-colors">How you&apos;re protected</Link>
             <Link href="/privacy"       className="hover:text-ws-body transition-colors">Privacy policy</Link>
             <Link href="/terms"         className="hover:text-ws-body transition-colors">Terms & conditions</Link>
             <Link href="/auth/login?type=installer" className="hover:text-ws-body transition-colors">Installer portal</Link>

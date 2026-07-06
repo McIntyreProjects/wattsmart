@@ -57,6 +57,7 @@ export default function TermsPage() {
 
         <div className="mt-10 pt-6 border-t border-ws-border text-xs text-ws-subtle flex gap-4">
           <Link href="/privacy" className="hover:text-ws-ink">Privacy policy</Link>
+          <Link href="/how-youre-protected" className="hover:text-ws-ink">How you&apos;re protected</Link>
           <Link href="/contact" className="hover:text-ws-ink">Contact us</Link>
         </div>
       </div>

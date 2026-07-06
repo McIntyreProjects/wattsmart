@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function InstallerFeesPage() {
   const supabase = await createClient()
@@ -33,7 +34,7 @@ export default async function InstallerFeesPage() {
 
   const { data: fees } = await supabase
     .from('fee_invoices')
-    .select('id, amount, status, created_at, due_date, enquiry_id, reference')
+    .select('id, amount, status, created_at, due_at, invoice_number')
     .eq('installer_id', installerId)
     .order('created_at', { ascending: false })
 
@@ -68,20 +69,20 @@ export default async function InstallerFeesPage() {
         ) : (
           <div className="border border-ws-border rounded-tile overflow-hidden mb-5">
             {fees.map((fee, i) => {
-              const ref = fee.reference || `#FI-${fee.id.slice(0, 6).toUpperCase()}`
+              const ref = fee.invoice_number || `#FI-${fee.id.slice(0, 6).toUpperCase()}`
               const dateLabel = fee.status === 'overdue' || fee.status === 'issued'
-                ? `Due ${formatDate(fee.due_date)}`
+                ? `Due ${formatDate(fee.due_at)}`
                 : formatDate(fee.created_at)
               const isPaid = fee.status === 'paid'
               return (
-                <div key={fee.id} className={`flex items-center justify-between px-4 py-4 text-sm ${i < fees.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
+                <Link href={`/installer/invoices/${fee.id}`} key={fee.id} className={`flex items-center justify-between px-4 py-4 text-sm hover:bg-[#FAFBFA] transition-colors ${i < fees.length - 1 ? 'border-b border-[#EDF1EE]' : ''}`}>
                   <div>
                     <p className="font-semibold">{ref}</p>
                     <p className="text-xs text-ws-muted mt-0.5">{dateLabel}</p>
                   </div>
                   <div className="text-right">
                     <p className={`font-bold ${fee.status === 'overdue' ? 'text-ws-red-text' : isPaid ? 'text-ws-green' : 'text-ws-ink'}`}>
-                      £{fee.amount.toLocaleString()}
+                      {formatCurrency(fee.amount)}
                     </p>
                     <span className={`text-xs rounded-lg px-2 py-0.5 ${
                       isPaid
@@ -93,7 +94,7 @@ export default async function InstallerFeesPage() {
                       {isPaid ? 'Paid ✓' : fee.status === 'overdue' ? 'Overdue' : 'Issued'}
                     </span>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

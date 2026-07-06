@@ -191,8 +191,12 @@ export async function POST(req: NextRequest) {
 
     const matched = (installers || [])
       .filter(inst => {
-        const coversPostcode = inst.coverage_postcodes.some((p: string) =>
-          postcodeArea.startsWith(p.trim().toUpperCase())
+        // Installer coverage entries are postcode AREAS ("NE", "YO", "S").
+        // Exact equality, never prefix matching: an installer covering "S"
+        // (Sheffield) must not match an "SW" (London) enquiry, and one
+        // covering "N" (London) must not match "NE" (Newcastle).
+        const coversPostcode = inst.coverage_postcodes.some(
+          (p: string) => p.trim().toUpperCase() === postcodeArea
         )
         const hasProducts = products.every((pr: string) => inst.products.includes(pr))
         return coversPostcode && hasProducts

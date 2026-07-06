@@ -63,6 +63,14 @@ export async function POST(req: NextRequest) {
       .eq('id', payment.installer_id)
       .single()
 
+    // Only certifications an admin has actually verified — the badges shown
+    // to the customer must reflect what this installer really holds.
+    const { data: verifiedCerts } = await admin
+      .from('certifications')
+      .select('type')
+      .eq('installer_id', payment.installer_id)
+      .eq('status', 'verified')
+
     return NextResponse.json({
       ok: true,
       installer: installer ? {
@@ -71,6 +79,7 @@ export async function POST(req: NextRequest) {
         contact_name: installer.contact_name,
         contact_email: installer.contact_email,
         contact_phone: installer.contact_phone,
+        verified_certifications: (verifiedCerts || []).map(c => c.type),
       } : null,
     })
   } catch (err) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase/server'
 import { sendQuotesReady, sendNoQuotesYet, sendAdminAlert } from '@/lib/email'
+import { getPostcodeArea } from '@/lib/utils'
 
 // Vercel invokes crons with GET and `Authorization: Bearer $CRON_SECRET`.
 // POST + x-cron-secret is kept for manual/backward-compatible invocation.
@@ -64,7 +65,7 @@ async function handle(req: NextRequest) {
 
       const excludeIds = (assignedInstallers || []).map(j => j.installer_id)
 
-      const postcodeArea = enquiry.postcode.split(' ')[0].replace(/\d+$/, '')
+      const postcodeArea = getPostcodeArea(enquiry.postcode)
 
       const { data: candidates } = await admin
         .from('installers')
@@ -73,7 +74,9 @@ async function handle(req: NextRequest) {
         .not('id', 'in', `(${excludeIds.join(',')})`)
 
       const next = (candidates || []).find(inst => {
-        const covers = inst.coverage_postcodes.some((p: string) => postcodeArea.startsWith(p.trim().toUpperCase()))
+        // Same semantics as enquiries/submit: coverage entries are postcode
+        // AREAS ("NE", "YO", "S") matched by exact equality, never prefix.
+        const covers = inst.coverage_postcodes.some((p: string) => p.trim().toUpperCase() === postcodeArea)
         const hasProducts = (enquiry.products as string[]).every(pr => inst.products.includes(pr))
         return covers && hasProducts
       })

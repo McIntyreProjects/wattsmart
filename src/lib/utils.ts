@@ -16,8 +16,18 @@ export function generateJobRef(seq: number): string {
   return `WS-${String(seq).padStart(4, '0')}`
 }
 
+// Postcode AREA: the leading 1–2 letters of the outward code.
+//   "S1 4XD"   → "S"    (Sheffield)
+//   "SW1A 1AA" → "SW"   (London — must NOT be confused with "S")
+//   "NE14XD"   → "NE"   (no space still works: letters end where digits begin)
+// Callers must compare areas with exact equality, never startsWith —
+// otherwise "S" (Sheffield) would swallow SW/SO/SA/SR/SS/ST etc.
 export function getPostcodeArea(postcode: string): string {
-  return postcode.trim().toUpperCase().split(' ')[0].replace(/\d+$/, '')
+  const cleaned = postcode.trim().toUpperCase().replace(/\s+/g, '')
+  const match = cleaned.match(/^([A-Z]{1,2})\d/)
+  // Malformed input: return the cleaned string so it can never
+  // accidentally equal a real area.
+  return match ? match[1] : cleaned
 }
 
 // Outward code (district), e.g. "NE1" from "NE1 4XD". The most granular
@@ -38,9 +48,16 @@ export function azimuthToCompass(degrees: number): string {
   return dirs[Math.round(normalised / 45) % 8]
 }
 
+// Launch areas: North East England & Yorkshire postcode AREAS.
+// "S" is Sheffield; "SR" is Sunderland. Both are legitimately in the list.
 export const LAUNCH_POSTCODES = ['NE', 'DH', 'SR', 'TS', 'YO', 'HG', 'HX', 'HD', 'BD', 'LS', 'WF', 'DN', 'S']
 
+// Exact area equality, NOT prefix matching:
+//   isLaunchPostcode('S1 4XD')   → true   (area "S", Sheffield ∈ launch list)
+//   isLaunchPostcode('SW1A 1AA') → false  (area "SW", London — previously
+//                                          passed because "SW".startsWith("S"))
+//   isLaunchPostcode('SO15 2AB') → false  (area "SO", Southampton)
+//   isLaunchPostcode('SR2 7DX')  → true   (area "SR", Sunderland)
 export function isLaunchPostcode(postcode: string): boolean {
-  const area = getPostcodeArea(postcode)
-  return LAUNCH_POSTCODES.some(p => area.startsWith(p))
+  return LAUNCH_POSTCODES.includes(getPostcodeArea(postcode))
 }
