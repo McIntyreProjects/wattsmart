@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {isPrelaunch && (
           <div className="bg-[#FFF7E6] border-b border-[#F0DCA8] px-4 py-2.5 text-center text-sm font-semibold text-[#8A6D1A]">
-            🚧 WattSmart is getting ready to launch — the service isn&apos;t live yet, and we can&apos;t take real enquiries or payments.
+            🚧 WattSmart is getting ready to launch — we are unable to provide quotes, take enquiries or payments at the moment.
           </div>
         )}
         {isDev && (
