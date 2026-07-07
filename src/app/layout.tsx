@@ -40,11 +40,19 @@ export const metadata: Metadata = {
 }
 
 const isDev = process.env.NODE_ENV === 'development'
+// Public pre-launch notice — shown while NEXT_PUBLIC_PRELAUNCH=1 is set in the
+// environment. At launch: remove the env var in Vercel and redeploy.
+const isPrelaunch = process.env.NEXT_PUBLIC_PRELAUNCH === '1'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bricolage.variable} ${figtree.variable}`}>
       <body>
+        {isPrelaunch && (
+          <div className="bg-[#FFF7E6] border-b border-[#F0DCA8] px-4 py-2.5 text-center text-sm font-semibold text-[#8A6D1A]">
+            🚧 WattSmart is getting ready to launch — the service isn&apos;t live yet, and we can&apos;t take real enquiries or payments.
+          </div>
+        )}
         {isDev && (
           <div
             style={{
