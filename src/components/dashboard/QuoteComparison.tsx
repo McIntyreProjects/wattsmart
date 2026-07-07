@@ -39,6 +39,24 @@ const CERT_BADGE_LABELS: Record<string, string> = {
   trustmark: 'TrustMark registered',
 }
 
+// Pre-payment disclosure returned by /api/quotes/select (UK Consumer
+// Contracts Regulations): the customer must see who they're contracting
+// with, their address, terms and cancellation rights BEFORE paying.
+interface DisclosureData {
+  quoteId: string
+  installer: {
+    company_name: string
+    business_address: string
+    contact_name: string
+    contact_email: string
+    contact_phone: string
+    companies_house_number: string | null
+    verified_certifications: string[]
+  }
+  termsHref: string
+  depositAmount: number
+}
+
 interface Review {
   id: string
   source: string
@@ -131,8 +149,12 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
 
-  // After "Choose" — waiting to pay
+  // After "Choose" — disclosure step, then waiting to pay
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
+  const [disclosure, setDisclosure] = useState<DisclosureData | null>(null)
+  const [ackChecked, setAckChecked] = useState(false)
+  const [acknowledging, setAcknowledging] = useState(false)
+  const [ackError, setAckError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [depositAmount, setDepositAmount] = useState(0)
   const [selecting, setSelecting] = useState<string | null>(null)
@@ -153,6 +175,9 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
       })
   }, [enquiryId])
 
+  const INCOMPLETE_MSG =
+    "We can't take a payment for this quote yet — this installer's details are incomplete. We've been alerted and will sort it out; the other quotes are still available."
+
   const handleSelect = async (quote: Quote) => {
     setSelecting(quote.id)
     setSelectError(null)
@@ -164,11 +189,43 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
     const data = await res.json()
     setSelecting(null)
     if (!res.ok) {
-      setSelectError('Failed to select quote. Please try again.')
+      // 409 installer_details_incomplete: nothing changed server-side —
+      // leave the customer on the list with the other quotes selectable.
+      setSelectError(data.error === 'installer_details_incomplete' ? INCOMPLETE_MSG : 'Failed to select quote. Please try again.')
       return
     }
 
+    // Selecting no longer creates a payment — show the CCR disclosure step
+    // first. The PaymentIntent is only created by /api/quotes/acknowledge.
     setSelectedQuote(quote)
+    setDisclosure(data)
+    setDepositAmount(data.depositAmount)
+    setAckChecked(false)
+    setAckError(null)
+  }
+
+  const handleAcknowledge = async () => {
+    if (!disclosure || !ackChecked) return
+    setAcknowledging(true)
+    setAckError(null)
+    const res = await fetch('/api/quotes/acknowledge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quoteId: disclosure.quoteId }),
+    })
+    const data = await res.json()
+    setAcknowledging(false)
+    if (!res.ok) {
+      if (data.error === 'installer_details_incomplete') {
+        // Back to the quote list — the other quotes remain selectable.
+        setSelectedQuote(null)
+        setDisclosure(null)
+        setSelectError(INCOMPLETE_MSG)
+        return
+      }
+      setAckError('Something went wrong — please try again. You have not been charged.')
+      return
+    }
     setClientSecret(data.clientSecret)
     setDepositAmount(data.depositAmount)
   }
@@ -294,6 +351,118 @@ export function QuoteComparison({ enquiryId }: { enquiryId: string }) {
         <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
           <DepositForm depositAmount={depositAmount} onSuccess={handlePaymentSuccess} />
         </Elements>
+      </div>
+    )
+  }
+
+  // Disclosure step (UK Consumer Contracts Regulations): the installer's
+  // identity, address, terms and cancellation rights, acknowledged BEFORE
+  // any payment form is shown. /api/quotes/acknowledge records the
+  // acknowledgement and only then returns a clientSecret.
+  if (selectedQuote && disclosure) {
+    const d = disclosure.installer
+    const certBadges = (d.verified_certifications || [])
+      .map(type => CERT_BADGE_LABELS[type])
+      .filter((label): label is string => Boolean(label))
+
+    return (
+      <div>
+        <div className="mb-6">
+          <p className="eyebrow mb-2">Before you pay</p>
+          <h1 className="text-2xl font-bold text-ws-ink mb-2" style={{ fontFamily: 'var(--font-bricolage), sans-serif', letterSpacing: '-0.02em' }}>
+            Who you&apos;re dealing with.
+          </h1>
+          <p className="text-sm text-ws-muted mb-1">
+            UK consumer law says you must see these details before paying a deposit — take a minute to read them.
+          </p>
+        </div>
+
+        <Card className="mb-4">
+          <h2 className="font-semibold text-ws-ink text-lg mb-3">{d.company_name}</h2>
+          <div className="text-sm space-y-1.5 mb-3">
+            <div>
+              <span className="text-ws-muted">Business address: </span>
+              <span className="text-ws-body whitespace-pre-line">{d.business_address}</span>
+            </div>
+            <div><span className="text-ws-muted">Contact: </span><span className="text-ws-body">{d.contact_name}</span></div>
+            <div><span className="text-ws-muted">Email: </span><span className="text-ws-body">{d.contact_email}</span></div>
+            <div><span className="text-ws-muted">Phone: </span><span className="text-ws-body">{d.contact_phone}</span></div>
+            {d.companies_house_number && (
+              <div><span className="text-ws-muted">Companies House number: </span><span className="text-ws-body">{d.companies_house_number}</span></div>
+            )}
+          </div>
+          {certBadges.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {certBadges.map(badge => (
+                <span key={badge} className="text-xs px-2.5 py-0.5 rounded-pill font-semibold" style={{ background: '#EAF5EE', color: '#0E7A43', border: '1px solid rgba(21,160,90,0.2)' }}>
+                  {badge}
+                </span>
+              ))}
+            </div>
+          )}
+          <a
+            href={disclosure.termsHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-sm font-semibold text-ws-dark-green hover:underline"
+          >
+            Read {d.company_name}&apos;s terms &amp; conditions →
+          </a>
+        </Card>
+
+        <Card className="mb-4">
+          <h2 className="font-semibold text-ws-ink mb-2">Your right to cancel</h2>
+          <ul className="text-sm text-ws-body space-y-1.5 list-disc pl-5 mb-3">
+            <li>You have a 14-day cooling-off period, starting the day you pay your deposit.</li>
+            <li>You can cancel by emailing <a href="mailto:hello@wattsmart.co.uk" className="text-ws-green font-medium">hello@wattsmart.co.uk</a> or from your dashboard.</li>
+            <li>If you cancel within the period, you get a full refund.</li>
+            <li>If you ask for work to begin within the 14 days, you may owe for work already done.</li>
+            <li>Your statutory rights are unaffected.</li>
+          </ul>
+          <details className="text-sm">
+            <summary className="cursor-pointer font-semibold text-ws-dark-green">Model cancellation form</summary>
+            <div className="mt-2 border border-ws-border rounded-btn p-4 text-ws-body bg-ws-bg whitespace-pre-line text-xs leading-relaxed">
+              {`To ${d.company_name}, ${d.business_address}:
+
+I/We hereby give notice that I/We cancel my/our contract for the supply of the following service,
+
+Ordered on [date],
+
+Name of consumer(s),
+
+Address of consumer(s),
+
+Signature of consumer(s) (only if this form is notified on paper),
+
+Date`}
+            </div>
+          </details>
+        </Card>
+
+        <Card>
+          <label className="flex items-start gap-3 cursor-pointer mb-4">
+            <input
+              type="checkbox"
+              checked={ackChecked}
+              onChange={e => setAckChecked(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-[#15A05A] flex-shrink-0"
+            />
+            <span className="text-sm text-ws-body">
+              I&apos;ve read {d.company_name}&apos;s details and terms, and I understand my cancellation rights.
+            </span>
+          </label>
+
+          <div className="flex justify-between text-sm mb-4">
+            <span className="text-ws-muted">Deposit to pay next</span>
+            <span className="font-semibold text-ws-ink">{formatCurrency(disclosure.depositAmount)}</span>
+          </div>
+
+          {ackError && <p className="text-xs text-[#C2603F] mb-3">{ackError}</p>}
+
+          <Button onClick={handleAcknowledge} loading={acknowledging} disabled={!ackChecked} className="w-full">
+            Continue to payment →
+          </Button>
+        </Card>
       </div>
     )
   }

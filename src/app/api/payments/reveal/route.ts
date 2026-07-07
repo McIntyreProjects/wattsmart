@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     const { data: payment } = await admin
       .from('payments')
-      .select('id, enquiry_id, installer_id, amount, status')
+      .select('id, enquiry_id, quote_id, installer_id, amount, status')
       .eq('stripe_payment_intent_id', paymentIntentId)
       .single()
 
@@ -49,6 +49,19 @@ export async function POST(req: NextRequest) {
     if (payment.status !== 'held') {
       await admin.from('payments').update({ status: 'held', paid_at: new Date().toISOString() }).eq('id', payment.id)
       await admin.from('enquiries').update({ status: 'deposit_paid' }).eq('id', payment.enquiry_id)
+    }
+
+    // Deposit paid — now reject the other quotes on this enquiry. This
+    // deliberately happens on payment success rather than at selection, so
+    // an abandoned disclosure/payment step never kills the other quotes.
+    // Idempotent (status filter) and harmless if the webhook ran first.
+    if (payment.quote_id) {
+      await admin
+        .from('quotes')
+        .update({ status: 'rejected' })
+        .eq('enquiry_id', payment.enquiry_id)
+        .neq('id', payment.quote_id)
+        .eq('status', 'submitted')
     }
 
     // Send confirmation emails exactly once, regardless of whether this route

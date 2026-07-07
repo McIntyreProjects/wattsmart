@@ -26,6 +26,11 @@ type FormData = {
   contactName: string
   contactEmail: string
   contactPhone: string
+  businessAddress: string
+  termsMode: 'pdf' | 'url'
+  termsUrl: string
+  termsPdfBase64: string
+  termsPdfName: string
   yearsTrading: string
   products: string[]
   certifications: Record<string, CertEntry>
@@ -36,6 +41,10 @@ type FormData = {
   password: string
   passwordConfirm: string
 }
+
+// Client-side cap below the server's 5MB decoded limit — base64 inflates the
+// payload by ~33% and serverless request bodies are capped at ~4.5MB.
+const MAX_TERMS_PDF_BYTES = 3 * 1024 * 1024
 
 const PRODUCTS = [
   { id: 'solar',    label: 'Solar panels',    certs: 'MCS certification required' },
@@ -144,13 +153,15 @@ export function InstallerRegisterForm() {
   const [step, setStep] = useState(0)
   const [data, setData] = useState<FormData>({
     companyName: '', tradingName: '', companiesHouseNumber: '', contactName: '', contactEmail: '',
-    contactPhone: '', yearsTrading: '', products: [], certifications: {},
+    contactPhone: '', businessAddress: '', termsMode: 'pdf', termsUrl: '', termsPdfBase64: '',
+    termsPdfName: '', yearsTrading: '', products: [], certifications: {},
     basePostcode: '', coveragePostcodes: '', googleBusinessName: '', trustpilotUrl: '',
     password: '', passwordConfirm: '',
   })
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [termsFileError, setTermsFileError] = useState('')
   const [extraCerts, setExtraCerts] = useState<string[]>([])
   const [showExtraPicker, setShowExtraPicker] = useState(false)
 
@@ -171,8 +182,37 @@ export function InstallerRegisterForm() {
       },
     }))
 
+  const handleTermsFile = (file: File | undefined) => {
+    setTermsFileError('')
+    if (!file) return
+    if (file.type !== 'application/pdf') {
+      setTermsFileError('Please upload a PDF file.')
+      return
+    }
+    if (file.size > MAX_TERMS_PDF_BYTES) {
+      setTermsFileError('PDF must be 3MB or smaller.')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : ''
+      if (!result.startsWith('data:application/pdf;base64,')) {
+        setTermsFileError('Please upload a PDF file.')
+        return
+      }
+      setData(d => ({ ...d, termsPdfBase64: result, termsPdfName: file.name }))
+    }
+    reader.onerror = () => setTermsFileError('Could not read that file. Please try again.')
+    reader.readAsDataURL(file)
+  }
+
+  const termsProvided =
+    data.termsMode === 'url'
+      ? /^https:\/\/.+/i.test(data.termsUrl.trim())
+      : !!data.termsPdfBase64
+
 const canProceed = () => {
-    if (step === 0) return data.companyName && data.contactName && data.contactEmail && data.contactPhone
+    if (step === 0) return data.companyName && data.contactName && data.contactEmail && data.contactPhone && data.businessAddress.trim() && termsProvided
     if (step === 1) return data.products.length > 0
     if (step === 2) {
       const required = getCertFields(data.products).filter(f => f.required)
@@ -189,7 +229,13 @@ const canProceed = () => {
     const res = await fetch('/api/installers/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      // Only send the terms field matching the chosen mode — the server
+      // requires exactly one of termsUrl / termsPdfBase64.
+      body: JSON.stringify({
+        ...data,
+        termsUrl: data.termsMode === 'url' ? data.termsUrl.trim() : '',
+        termsPdfBase64: data.termsMode === 'pdf' ? data.termsPdfBase64 : '',
+      }),
     })
     const json = await res.json()
     if (!res.ok) setError(json.error || 'Registration failed')
@@ -255,6 +301,17 @@ const canProceed = () => {
             <p className="text-xs text-ws-muted mt-1.5">If you trade under a different name, enter it here — this is what customers will see. Leave blank to use your company name.</p>
           </div>
           <FieldInput label="Companies House number" optional value={data.companiesHouseNumber} onChange={v => set('companiesHouseNumber', v)} />
+          <div>
+            <label className="block text-sm font-semibold text-ws-ink mb-1.5">Business address — shown to customers before they pay</label>
+            <textarea
+              value={data.businessAddress}
+              onChange={e => set('businessAddress', e.target.value)}
+              rows={3}
+              placeholder={'e.g. Unit 4, Riverside Business Park\nDurham\nDH1 2AB'}
+              className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white resize-none"
+            />
+            <p className="text-xs text-ws-muted mt-1.5">UK consumer law requires us to show your trading address to customers before they pay a deposit.</p>
+          </div>
           <FieldInput label="Your name" value={data.contactName} onChange={v => set('contactName', v)} />
           <FieldInput label="Email address" type="email" value={data.contactEmail} onChange={v => set('contactEmail', v)} />
           <FieldInput label="Phone number" type="tel" value={data.contactPhone} onChange={v => set('contactPhone', v)} />
@@ -263,6 +320,53 @@ const canProceed = () => {
             <p className="text-xs text-ws-muted mt-1.5">Your business base — used to match you with nearby customers.</p>
           </div>
           <FieldInput label="Years trading" type="number" value={data.yearsTrading} onChange={v => set('yearsTrading', v)} />
+          <div>
+            <label className="block text-sm font-semibold text-ws-ink mb-1.5">Your terms &amp; conditions</label>
+            <p className="text-xs text-ws-muted mb-2">Customers must be able to read your terms before they pay — upload a PDF or link to the terms page on your website.</p>
+            <div className="flex border border-ws-border rounded-btn overflow-hidden w-fit mb-3">
+              {([['pdf', 'Upload PDF'], ['url', 'Link to your terms page']] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => set('termsMode', mode)}
+                  className="px-3 py-1.5 text-sm transition-colors font-medium"
+                  style={{ background: data.termsMode === mode ? '#15A05A' : '#fff', color: data.termsMode === mode ? '#fff' : '#7C887F' }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {data.termsMode === 'pdf' ? (
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer group w-fit">
+                  <div className="border border-dashed border-ws-border rounded-btn px-3 py-2 text-sm text-ws-muted group-hover:border-ws-green group-hover:text-ws-dark-green transition-colors flex items-center gap-1.5">
+                    <span>↑</span> {data.termsPdfName || 'Upload your terms & conditions'} <span className="text-ws-subtle">(PDF, max 3MB)</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    className="hidden"
+                    onChange={e => handleTermsFile(e.target.files?.[0])}
+                  />
+                </label>
+                {data.termsPdfName && !termsFileError && (
+                  <p className="text-xs text-ws-dark-green mt-1.5">✓ {data.termsPdfName} attached</p>
+                )}
+                {termsFileError && <p className="text-xs text-ws-red-text mt-1.5">{termsFileError}</p>}
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="url"
+                  value={data.termsUrl}
+                  onChange={e => set('termsUrl', e.target.value)}
+                  placeholder="https://yourcompany.co.uk/terms"
+                  className="w-full border border-ws-border rounded-btn px-4 py-3 text-sm text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-ws-green bg-white"
+                />
+                <p className="text-xs text-ws-muted mt-1.5">Must be an https:// link customers can open without logging in.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

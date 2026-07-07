@@ -32,6 +32,63 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // ── CCR disclosure fields ─────────────────────────────────────────
+    // UK Consumer Contracts Regulations: the installer's geographical
+    // address and terms must be shown to customers before payment, so both
+    // are mandatory at registration.
+    const businessAddress = typeof body.businessAddress === 'string' ? body.businessAddress.trim() : ''
+    if (!businessAddress) {
+      return NextResponse.json({ error: 'Business address is required' }, { status: 400 })
+    }
+    if (businessAddress.length > 500) {
+      return NextResponse.json({ error: 'Business address must be 500 characters or fewer' }, { status: 400 })
+    }
+
+    const termsUrl = typeof body.termsUrl === 'string' ? body.termsUrl.trim() : ''
+    const termsPdfBase64 = typeof body.termsPdfBase64 === 'string' ? body.termsPdfBase64 : ''
+
+    // Exactly one of the two terms sources must be provided
+    if (!termsUrl && !termsPdfBase64) {
+      return NextResponse.json({ error: 'Terms & conditions are required — upload a PDF or link to your terms page' }, { status: 400 })
+    }
+    if (termsUrl && termsPdfBase64) {
+      return NextResponse.json({ error: 'Provide either a terms PDF or a terms URL, not both' }, { status: 400 })
+    }
+
+    if (termsUrl) {
+      if (!/^https:\/\/.+/i.test(termsUrl)) {
+        return NextResponse.json({ error: 'Terms URL must start with https://' }, { status: 400 })
+      }
+      if (termsUrl.length > 500) {
+        return NextResponse.json({ error: 'Terms URL must be 500 characters or fewer' }, { status: 400 })
+      }
+    }
+
+    let termsPdfBuffer: Buffer | null = null
+    if (termsPdfBase64) {
+      // The client sends a data URL (data:application/pdf;base64,...) —
+      // strip the prefix, decode, and verify it really is a PDF.
+      const commaIdx = termsPdfBase64.indexOf(',')
+      const rawBase64 = termsPdfBase64.startsWith('data:') && commaIdx !== -1
+        ? termsPdfBase64.slice(commaIdx + 1)
+        : termsPdfBase64
+      try {
+        termsPdfBuffer = Buffer.from(rawBase64, 'base64')
+      } catch {
+        termsPdfBuffer = null
+      }
+      if (!termsPdfBuffer || termsPdfBuffer.length === 0) {
+        return NextResponse.json({ error: 'Could not read the terms PDF — please try uploading it again' }, { status: 400 })
+      }
+      if (termsPdfBuffer.length > 5 * 1024 * 1024) {
+        return NextResponse.json({ error: 'Terms PDF must be 5MB or smaller' }, { status: 400 })
+      }
+      // %PDF magic bytes
+      if (termsPdfBuffer.subarray(0, 4).toString('latin1') !== '%PDF') {
+        return NextResponse.json({ error: 'The uploaded terms file is not a valid PDF' }, { status: 400 })
+      }
+    }
+
     // Require only the mandatory certification(s) for the selected products
     const missingCerts = new Set<string>()
     for (const product of products as string[]) {
@@ -107,6 +164,8 @@ export async function POST(req: NextRequest) {
         base_postcode: basePostcode ? basePostcode.trim().toUpperCase() : null,
         status: 'pending',
         trustpilot_url: trustpilotUrl || null,
+        business_address: businessAddress,
+        terms_url: termsUrl || null,
       })
       .select()
       .single()
@@ -114,6 +173,35 @@ export async function POST(req: NextRequest) {
     if (instError) {
       await rollback()
       throw instError
+    }
+
+    // Upload terms PDF to the private installer-terms bucket. A missing
+    // terms reference blocks customer payments (CCR), so a failure here
+    // rolls back the whole registration rather than leaving a half-set-up
+    // installer.
+    if (termsPdfBuffer) {
+      const termsPath = `${installer.id}.pdf`
+      const { error: uploadError } = await supabase.storage
+        .from('installer-terms')
+        .upload(termsPath, termsPdfBuffer, { contentType: 'application/pdf', upsert: true })
+
+      if (uploadError) {
+        await supabase.from('installers').delete().eq('id', installer.id)
+        await rollback()
+        throw uploadError
+      }
+
+      const { error: pathError } = await supabase
+        .from('installers')
+        .update({ terms_storage_path: termsPath })
+        .eq('id', installer.id)
+
+      if (pathError) {
+        await supabase.storage.from('installer-terms').remove([termsPath]).catch(console.error)
+        await supabase.from('installers').delete().eq('id', installer.id)
+        await rollback()
+        throw pathError
+      }
     }
 
     // Store certifications

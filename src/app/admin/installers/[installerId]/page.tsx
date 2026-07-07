@@ -28,7 +28,7 @@ export default async function AdminInstallerDetailPage({
   ] = await Promise.all([
     admin
       .from('installers')
-      .select('id, company_name, trading_name, contact_name, contact_email, contact_phone, status, years_trading, products, coverage_postcodes, base_postcode, created_at, stripe_connect_onboarded')
+      .select('id, company_name, trading_name, contact_name, contact_email, contact_phone, status, years_trading, products, coverage_postcodes, base_postcode, created_at, stripe_connect_onboarded, business_address, terms_url, terms_storage_path')
       .eq('id', installerId)
       .single(),
     admin
@@ -97,6 +97,22 @@ export default async function AdminInstallerDetailPage({
   const activeCount = team.filter(m => m.status === 'active').length
   const pendingCount = team.filter(m => m.status === 'pending').length
 
+  // CCR disclosure fields — customers cannot pay this installer's quotes
+  // until both a business address and a terms reference exist.
+  const businessAddress = (installer.business_address as string | null)?.trim() || ''
+  let termsHref: string | null = (installer.terms_url as string | null) || null
+  if (!termsHref && installer.terms_storage_path) {
+    const { data: signed } = await admin.storage
+      .from('installer-terms')
+      .createSignedUrl(installer.terms_storage_path as string, 600)
+    termsHref = signed?.signedUrl ?? null
+  }
+  const missingWarning = (
+    <span className="inline-block text-xs font-bold rounded-pill px-2.5 py-0.5 border border-red-200 bg-ws-red-bg text-ws-red-text">
+      MISSING — blocks customer payments
+    </span>
+  )
+
   return (
     <div className="min-h-screen bg-ws-bg font-body text-ws-ink">
       <nav className="flex items-center gap-8 px-6 py-4 bg-white border-b border-ws-border">
@@ -153,6 +169,29 @@ export default async function AdminInstallerDetailPage({
           <div>
             <p className="text-xs text-ws-muted mb-0.5">Stripe connected</p>
             <p className="font-semibold">{installer.stripe_connect_onboarded ? 'Yes' : 'No'}</p>
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Business address</p>
+            {businessAddress ? (
+              <p className="font-semibold whitespace-pre-line">{businessAddress}</p>
+            ) : (
+              missingWarning
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-ws-muted mb-0.5">Terms &amp; conditions</p>
+            {termsHref ? (
+              <a
+                href={termsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-ws-dark-green hover:underline"
+              >
+                {installer.terms_url ? 'View terms page →' : 'View uploaded terms PDF →'}
+              </a>
+            ) : (
+              missingWarning
+            )}
           </div>
         </div>
 

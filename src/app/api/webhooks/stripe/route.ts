@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         // closed the tab), so the webhook must be able to complete the flow.
         const { data: payment } = await admin
           .from('payments')
-          .select('id, type, enquiry_id')
+          .select('id, type, enquiry_id, quote_id')
           .eq('stripe_payment_intent_id', pi.id)
           .maybeSingle()
 
@@ -47,6 +47,19 @@ export async function POST(req: NextRequest) {
             .update({ status: 'deposit_paid' })
             .eq('id', payment.enquiry_id)
             .eq('status', 'installer_chosen')
+
+          // Deposit paid — reject the other quotes on this enquiry. This
+          // happens on payment success (not at selection) so an abandoned
+          // disclosure/payment step never kills the other quotes. Idempotent
+          // (status filter) and harmless if /api/payments/reveal ran first.
+          if (payment.quote_id) {
+            await admin
+              .from('quotes')
+              .update({ status: 'rejected' })
+              .eq('enquiry_id', payment.enquiry_id)
+              .neq('id', payment.quote_id)
+              .eq('status', 'submitted')
+          }
 
           await claimAndSendDepositEmails(admin, payment.id)
         }
